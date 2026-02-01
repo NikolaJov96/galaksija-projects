@@ -13,8 +13,8 @@
 #define KEY_3 51
 #define KEY_S 83
 
-#define PATH_LENGTH_SHIFT 4
-#define PATH_LENGTH (1 << PATH_LENGTH_SHIFT)
+#define PATH_LENGTH_SHIFT 5
+#define PATH_LENGTH (1l << PATH_LENGTH_SHIFT)
 
 #define FP_SHIFT 8
 #define TO_FIXED(x) ((int32_t)((x) * (1l << FP_SHIFT)))
@@ -31,15 +31,27 @@ enum stats_visibility {
     STATS_OFF, STATS_ON
 };
 
+// Path history variables, globals to preserve stack space
+int positions_x[PATH_LENGTH];
+int positions_y[PATH_LENGTH];
+int path_index = 0;
+int oldest_path_index = 0;
+
+// Display labels
+enum stats_visibility print_labels = STATS_OFF;
+int ignore_button_ticks = 0;
+uint32_t iteration = 1;
+char num_str[32];
+
 /* Prints an int value into a string, adds minus if negative, adds spaces if less than 3 digits. */
-void print_int_3(char* str, int value)
+void print_int_3(int value)
 {
     int max_value = 99;
     int digit = 0;
     int i = 0;
 
     if (value < 0) {
-        str[i++] = '-';
+        num_str[i++] = '-';
         value = -value;
     }
 
@@ -51,24 +63,24 @@ void print_int_3(char* str, int value)
     if (value >= 10)
     {
         digit = value / 10;
-        str[i++] = '0' + digit;
+        num_str[i++] = '0' + digit;
         value -= digit * 10;
     }
 
     // Value is now a single digit
-    str[i++] = '0' + value;
+    num_str[i++] = '0' + value;
 
     // Pad with spaces if needed
     while (i < 3) {
-        str[i++] = ' ';
+        num_str[i++] = ' ';
     }
 
     // Null-terminate
-    str[i++] = 0;
+    num_str[i++] = 0;
 }
 
 /* Prints a positive long int value into a string. */
-void print_int_6(char* str, int32_t value)
+void print_int_6(int32_t value)
 {
     int32_t max_value = 999999;
     int digit = 0;
@@ -90,24 +102,24 @@ void print_int_6(char* str, int32_t value)
         if (value >= max_value)
         {
             digit = value / max_value;
-            str[i++] = '0' + digit;
+            num_str[i++] = '0' + digit;
             value -= digit * max_value;
         }
         else
         {
-            str[i++] = '0';
+            num_str[i++] = '0';
         }
         max_value /= 10;
     }
 
     // Value is now a single digit
-    str[i++] = '0' + value;
+    num_str[i++] = '0' + value;
 
     // Null-terminate
-    str[i++] = 0;
+    num_str[i++] = 0;
 }
 
-void reset_path_history(int *positions_x, int *positions_y, int *path_index)
+void reset_path_history()
 {
     for (int i = 0; i < PATH_LENGTH; i++)
     {
@@ -120,7 +132,7 @@ void reset_path_history(int *positions_x, int *positions_y, int *path_index)
         positions_x[i] = -1;
         positions_y[i] = -1;
     }
-    *path_index = 0;
+    path_index = 0;
 }
 
 int main()
@@ -185,23 +197,13 @@ int main()
     int32_t z = TO_FIXED(1.0);
 
     // Path history
-    int positions_x[PATH_LENGTH];
-    int positions_y[PATH_LENGTH];
-    int path_index = 0;
-    int oldest_path_index = 0;
-    reset_path_history(positions_x, positions_y, &path_index);
+    reset_path_history();
 
     // Time step
     int32_t dt = TO_FIXED(0.01);
 
     // Projection axis
     enum view_axis projection = ASIS_XZ;
-
-    // Display labels
-    enum stats_visibility print_labels = STATS_OFF;
-    int ignore_button_ticks = 0;
-    uint32_t iteration = 1;
-    char num_str[32];
 
     // Loop variable initialization
     int32_t dx = 0;
@@ -268,19 +270,19 @@ ITER:
     if (print_labels == STATS_ON)
     {
         gal_gotoxy(4, SCREEN_HEIGHT - 4);
-        print_int_3(num_str, FROM_FIXED((int)x));
+        print_int_3(FROM_FIXED((int)x));
         gal_puts(num_str);
 
         gal_gotoxy(4, SCREEN_HEIGHT - 3);
-        print_int_3(num_str, FROM_FIXED((int)y));
+        print_int_3(FROM_FIXED((int)y));
         gal_puts(num_str);
 
         gal_gotoxy(4, SCREEN_HEIGHT - 2);
-        print_int_3(num_str, FROM_FIXED((int)z));
+        print_int_3(FROM_FIXED((int)z));
         gal_puts(num_str);
 
         gal_gotoxy(7, SCREEN_HEIGHT - 1);
-        print_int_6(num_str, (int)iteration);
+        print_int_6((int)iteration);
         gal_puts(num_str);
     }
 
@@ -291,17 +293,17 @@ ITER:
         {
         case KEY_1:
             projection = ASIS_XY;
-            reset_path_history(positions_x, positions_y, &path_index);
+            reset_path_history();
             ignore_button_ticks = 15;
             break;
         case KEY_2:
             projection = ASIS_XZ;
-            reset_path_history(positions_x, positions_y, &path_index);
+            reset_path_history();
             ignore_button_ticks = 15;
             break;
         case KEY_3:
             projection = ASIS_YZ;
-            reset_path_history(positions_x, positions_y, &path_index);
+            reset_path_history();
             ignore_button_ticks = 15;
             break;
         case KEY_S:
