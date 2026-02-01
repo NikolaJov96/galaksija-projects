@@ -12,7 +12,7 @@
 #define KEY_1 49
 #define KEY_2 50
 #define KEY_3 51
-#define KEY_S 115
+#define KEY_S 83
 
 #define FP_SHIFT 8
 #define TO_FIXED(x) ((int32_t)((x) * (1l << FP_SHIFT)))
@@ -148,16 +148,25 @@ ITER:
     // Update iteration count
     if (print_labels == STATS_ON) {
         gal_gotoxy(4, SCREEN_HEIGHT - 4);
-        sprintf(num_str, "%-3ld", FROM_FIXED(x));
+        gal_puts("       ");
+        gal_gotoxy(4, SCREEN_HEIGHT - 4);
+        itoa(FROM_FIXED((int)x), num_str, 10);
         gal_puts(num_str);
+
         gal_gotoxy(4, SCREEN_HEIGHT - 3);
-        sprintf(num_str, "%-3ld", FROM_FIXED(y));
+        gal_puts("       ");
+        gal_gotoxy(4, SCREEN_HEIGHT - 3);
+        itoa(FROM_FIXED((int)y), num_str, 10);
         gal_puts(num_str);
+
         gal_gotoxy(4, SCREEN_HEIGHT - 2);
-        sprintf(num_str, "%-3ld", FROM_FIXED(z));
+        gal_puts("       ");
+        gal_gotoxy(4, SCREEN_HEIGHT - 2);
+        itoa(FROM_FIXED((int)z), num_str, 10);
         gal_puts(num_str);
+
         gal_gotoxy(7, SCREEN_HEIGHT - 1);
-        sprintf(num_str, "%-5ld", iteration);
+        itoa((int)iteration, num_str, 10);
         gal_puts(num_str);
     }
 
