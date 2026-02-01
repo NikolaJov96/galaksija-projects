@@ -173,6 +173,7 @@ int main()
 
     // Display labels
     enum stats_visibility print_labels = STATS_OFF;
+    int ignore_s_ticks = 0;
     uint32_t iteration = 1;
     char num_str[32];
 
@@ -259,6 +260,10 @@ ITER:
         projection = ASIS_YZ;
         break;
     case KEY_S:
+        if (ignore_s_ticks > 0)
+        {
+            break;
+        }
         if (print_labels == STATS_OFF) {
             print_labels = STATS_ON;
             gal_gotoxy(1, SCREEN_HEIGHT - 4);
@@ -269,6 +274,7 @@ ITER:
             gal_puts("Z: ");
             gal_gotoxy(1, SCREEN_HEIGHT - 1);
             gal_puts("ITER: ");
+            ignore_s_ticks = 15;
         } else {
             print_labels = STATS_OFF;
             gal_gotoxy(1, SCREEN_HEIGHT - 4);
@@ -279,12 +285,17 @@ ITER:
             gal_puts("         ");
             gal_gotoxy(1, SCREEN_HEIGHT - 1);
             gal_puts("*************");
+            ignore_s_ticks = 15;
         }
         break;
     default:
         break;
     }
 
+    if (ignore_s_ticks > 0)
+    {
+        ignore_s_ticks--;
+    }
     iteration++;
     goto ITER;
 
