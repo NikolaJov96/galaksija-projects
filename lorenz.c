@@ -195,7 +195,7 @@ int main()
     int32_t dt = TO_FIXED(0.01);
 
     // Projection axis
-    enum view_axis projection = ASIS_XY;
+    enum view_axis projection = ASIS_XZ;
 
     // Display labels
     enum stats_visibility print_labels = STATS_OFF;
@@ -221,13 +221,6 @@ ITER:
     y += FIXED_MUL(dy, dt);
     z += FIXED_MUL(dz, dt);
 
-    // Remove previous point
-    // if (screen_x >= 1 && screen_x < SCREEN_WIDTH - 1 &&
-    //     screen_y >= 1 && screen_y < SCREEN_HEIGHT - 1) {
-    //     gal_gotoxy(screen_x, screen_y);
-    //     gal_putc(' ');
-    // }
-
     // Map to screen coordinates
     switch (projection)
     {
@@ -245,24 +238,27 @@ ITER:
             break;
     }
 
-    // Erase oldest point in path history
-    oldest_path_index = (path_index + 1) & (PATH_LENGTH - 1);
-    if (positions_x[oldest_path_index] != -1 && positions_y[oldest_path_index] != -1)
-    {
-        gal_gotoxy(positions_x[oldest_path_index], positions_y[oldest_path_index]);
-        gal_putc(' ');
-    }
-
     // Plot point if within bounds
     if (screen_x >= 1 && screen_x < SCREEN_WIDTH - 1 &&
         screen_y >= 1 && screen_y < SCREEN_HEIGHT - 1)
     {
-        // Move to the next position in the path history
-        path_index = oldest_path_index;
+        if (screen_x != positions_x[path_index] || screen_y != positions_y[path_index])
+        {
+            // Erase oldest point in path history
+            oldest_path_index = (path_index + 1) & (PATH_LENGTH - 1);
+            if (positions_x[oldest_path_index] != -1 && positions_y[oldest_path_index] != -1)
+            {
+                gal_gotoxy(positions_x[oldest_path_index], positions_y[oldest_path_index]);
+                gal_putc(' ');
+            }
 
-        // Store new position in history
-        positions_x[path_index] = screen_x;
-        positions_y[path_index] = screen_y;
+            // Move to the next position in the path history
+            path_index = oldest_path_index;
+
+            // Store new position in history
+            positions_x[path_index] = screen_x;
+            positions_y[path_index] = screen_y;
+        }
 
         gal_gotoxy(screen_x, screen_y);
         gal_putc('#');
