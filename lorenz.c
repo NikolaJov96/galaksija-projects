@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <stdint.h>
 #include <conio.h>
 
@@ -19,21 +18,101 @@
 #define FROM_FIXED(x) ((x) >> FP_SHIFT)
 #define FIXED_MUL(a, b) (FROM_FIXED(((a) * (b))))
 
+/* Marks the camera view angle of the system */
 enum view_axis {
     ASIS_XY, ASIS_XZ, ASIS_YZ
 };
 
+/* Marks whether statistics are visible */
 enum stats_visibility {
     STATS_OFF, STATS_ON
 };
 
+/* Prints an int value into a string, adds minus if negative, adds spaces if less than 3 digits. */
+void print_int_3(char* str, int value)
+{
+    int max_value = 99;
+    int digit = 0;
+    int i = 0;
+
+    if (value < 0) {
+        str[i++] = '-';
+        value = -value;
+    }
+
+    if (value > max_value)
+    {
+        value = max_value;
+    }
+
+    if (value >= 10)
+    {
+        digit = value / 10;
+        str[i++] = '0' + digit;
+        value -= digit * 10;
+    }
+
+    // Value is now a single digit
+    str[i++] = '0' + value;
+
+    // Pad with spaces if needed
+    while (i < 3) {
+        str[i++] = ' ';
+    }
+
+    // Null-terminate
+    str[i++] = 0;
+}
+
+/* Prints a positive long int value into a string. */
+void print_int_6(char* str, int32_t value)
+{
+    int32_t max_value = 999999;
+    int digit = 0;
+    int i = 0;
+
+    if (value > max_value)
+    {
+        value = max_value;
+    }
+    max_value++;
+
+    while (max_value > value)
+    {
+        max_value /= 10;
+    }
+
+    while (max_value >= 10)
+    {
+        if (value >= max_value)
+        {
+            digit = value / max_value;
+            str[i++] = '0' + digit;
+            value -= digit * max_value;
+        }
+        else
+        {
+            str[i++] = '0';
+        }
+        max_value /= 10;
+    }
+
+    // Value is now a single digit
+    str[i++] = '0' + value;
+
+    // Null-terminate
+    str[i++] = 0;
+}
+
 int main()
 {
+    int i;
+
     // Welcome screen
     gal_cls();
 
     // Vertical border
-    for (int i = 0; i < SCREEN_HEIGHT - 0; i++) {
+    for (i = 0; i < SCREEN_HEIGHT - 0; i++) {
         gal_gotoxy(0, i);
         gal_putc('*');
         gal_gotoxy(SCREEN_WIDTH - 1, i);
@@ -41,7 +120,7 @@ int main()
     }
 
     // Horizontal border
-    for (int i = 1; i < SCREEN_WIDTH - 1; i++) {
+    for (i = 1; i < SCREEN_WIDTH - 1; i++) {
         gal_gotoxy(i, 0);
         gal_putc('*');
         gal_gotoxy(i, SCREEN_HEIGHT - 1);
@@ -123,7 +202,8 @@ ITER:
     }
 
     // Map to screen coordinates
-    switch (projection) {
+    switch (projection)
+    {
         case ASIS_XY:
             screen_x = SCREEN_WIDTH_HALF + FROM_FIXED(x) / 2;
             screen_y = SCREEN_HEIGHT_HALF + FROM_FIXED(y) / 2;
@@ -140,33 +220,29 @@ ITER:
 
     // Plot point if within bounds
     if (screen_x >= 1 && screen_x < SCREEN_WIDTH - 1 &&
-        screen_y >= 1 && screen_y < SCREEN_HEIGHT - 1) {
+        screen_y >= 1 && screen_y < SCREEN_HEIGHT - 1)
+    {
         gal_gotoxy(screen_x, screen_y);
         gal_putc('#');
     }
 
     // Update iteration count
-    if (print_labels == STATS_ON) {
+    if (print_labels == STATS_ON)
+    {
         gal_gotoxy(4, SCREEN_HEIGHT - 4);
-        gal_puts("       ");
-        gal_gotoxy(4, SCREEN_HEIGHT - 4);
-        itoa(FROM_FIXED((int)x), num_str, 10);
+        print_int_3(num_str, FROM_FIXED((int)x));
         gal_puts(num_str);
 
         gal_gotoxy(4, SCREEN_HEIGHT - 3);
-        gal_puts("       ");
-        gal_gotoxy(4, SCREEN_HEIGHT - 3);
-        itoa(FROM_FIXED((int)y), num_str, 10);
+        print_int_3(num_str, FROM_FIXED((int)y));
         gal_puts(num_str);
 
         gal_gotoxy(4, SCREEN_HEIGHT - 2);
-        gal_puts("       ");
-        gal_gotoxy(4, SCREEN_HEIGHT - 2);
-        itoa(FROM_FIXED((int)z), num_str, 10);
+        print_int_3(num_str, FROM_FIXED((int)z));
         gal_puts(num_str);
 
         gal_gotoxy(7, SCREEN_HEIGHT - 1);
-        itoa((int)iteration, num_str, 10);
+        print_int_6(num_str, (int)iteration);
         gal_puts(num_str);
     }
 
