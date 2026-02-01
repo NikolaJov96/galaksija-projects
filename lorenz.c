@@ -13,6 +13,9 @@
 #define KEY_3 51
 #define KEY_S 83
 
+#define PATH_LENGTH_SHIFT 4
+#define PATH_LENGTH (1 << PATH_LENGTH_SHIFT)
+
 #define FP_SHIFT 8
 #define TO_FIXED(x) ((int32_t)((x) * (1l << FP_SHIFT)))
 #define FROM_FIXED(x) ((x) >> FP_SHIFT)
@@ -104,6 +107,22 @@ void print_int_6(char* str, int32_t value)
     str[i++] = 0;
 }
 
+void reset_path_history(int *positions_x, int *positions_y, int *path_index)
+{
+    for (int i = 0; i < PATH_LENGTH; i++)
+    {
+        if (positions_x[i] != -1 && positions_y[i] != -1)
+        {
+            gal_gotoxy(positions_x[i], positions_y[i]);
+            gal_putc(' ');
+        }
+
+        positions_x[i] = -1;
+        positions_y[i] = -1;
+    }
+    *path_index = 0;
+}
+
 int main()
 {
     int i;
@@ -165,6 +184,13 @@ int main()
     int32_t y = TO_FIXED(1.0);
     int32_t z = TO_FIXED(1.0);
 
+    // Path history
+    int positions_x[PATH_LENGTH];
+    int positions_y[PATH_LENGTH];
+    int path_index = 0;
+    int oldest_path_index = 0;
+    reset_path_history(positions_x, positions_y, &path_index);
+
     // Time step
     int32_t dt = TO_FIXED(0.01);
 
@@ -173,7 +199,7 @@ int main()
 
     // Display labels
     enum stats_visibility print_labels = STATS_OFF;
-    int ignore_s_ticks = 0;
+    int ignore_button_ticks = 0;
     uint32_t iteration = 1;
     char num_str[32];
 
@@ -196,11 +222,11 @@ ITER:
     z += FIXED_MUL(dz, dt);
 
     // Remove previous point
-    if (screen_x >= 1 && screen_x < SCREEN_WIDTH - 1 &&
-        screen_y >= 1 && screen_y < SCREEN_HEIGHT - 1) {
-        gal_gotoxy(screen_x, screen_y);
-        gal_putc(' ');
-    }
+    // if (screen_x >= 1 && screen_x < SCREEN_WIDTH - 1 &&
+    //     screen_y >= 1 && screen_y < SCREEN_HEIGHT - 1) {
+    //     gal_gotoxy(screen_x, screen_y);
+    //     gal_putc(' ');
+    // }
 
     // Map to screen coordinates
     switch (projection)
@@ -219,10 +245,25 @@ ITER:
             break;
     }
 
+    // Erase oldest point in path history
+    oldest_path_index = (path_index + 1) & (PATH_LENGTH - 1);
+    if (positions_x[oldest_path_index] != -1 && positions_y[oldest_path_index] != -1)
+    {
+        gal_gotoxy(positions_x[oldest_path_index], positions_y[oldest_path_index]);
+        gal_putc(' ');
+    }
+
     // Plot point if within bounds
     if (screen_x >= 1 && screen_x < SCREEN_WIDTH - 1 &&
         screen_y >= 1 && screen_y < SCREEN_HEIGHT - 1)
     {
+        // Move to the next position in the path history
+        path_index = oldest_path_index;
+
+        // Store new position in history
+        positions_x[path_index] = screen_x;
+        positions_y[path_index] = screen_y;
+
         gal_gotoxy(screen_x, screen_y);
         gal_putc('#');
     }
@@ -247,54 +288,59 @@ ITER:
         gal_puts(num_str);
     }
 
-    input = getk();
-    switch (input)
+    if (ignore_button_ticks == 0)
     {
-    case KEY_1:
-        projection = ASIS_XY;
-        break;
-    case KEY_2:
-        projection = ASIS_XZ;
-        break;
-    case KEY_3:
-        projection = ASIS_YZ;
-        break;
-    case KEY_S:
-        if (ignore_s_ticks > 0)
+        input = getk();
+        switch (input)
         {
+        case KEY_1:
+            projection = ASIS_XY;
+            reset_path_history(positions_x, positions_y, &path_index);
+            ignore_button_ticks = 15;
+            break;
+        case KEY_2:
+            projection = ASIS_XZ;
+            reset_path_history(positions_x, positions_y, &path_index);
+            ignore_button_ticks = 15;
+            break;
+        case KEY_3:
+            projection = ASIS_YZ;
+            reset_path_history(positions_x, positions_y, &path_index);
+            ignore_button_ticks = 15;
+            break;
+        case KEY_S:
+            if (print_labels == STATS_OFF) {
+                print_labels = STATS_ON;
+                gal_gotoxy(1, SCREEN_HEIGHT - 4);
+                gal_puts("X: ");
+                gal_gotoxy(1, SCREEN_HEIGHT - 3);
+                gal_puts("Y: ");
+                gal_gotoxy(1, SCREEN_HEIGHT - 2);
+                gal_puts("Z: ");
+                gal_gotoxy(1, SCREEN_HEIGHT - 1);
+                gal_puts("ITER: ");
+                ignore_button_ticks = 15;
+            } else {
+                print_labels = STATS_OFF;
+                gal_gotoxy(1, SCREEN_HEIGHT - 4);
+                gal_puts("         ");
+                gal_gotoxy(1, SCREEN_HEIGHT - 3);
+                gal_puts("         ");
+                gal_gotoxy(1, SCREEN_HEIGHT - 2);
+                gal_puts("         ");
+                gal_gotoxy(1, SCREEN_HEIGHT - 1);
+                gal_puts("*************");
+                ignore_button_ticks = 15;
+            }
+            break;
+        default:
             break;
         }
-        if (print_labels == STATS_OFF) {
-            print_labels = STATS_ON;
-            gal_gotoxy(1, SCREEN_HEIGHT - 4);
-            gal_puts("X: ");
-            gal_gotoxy(1, SCREEN_HEIGHT - 3);
-            gal_puts("Y: ");
-            gal_gotoxy(1, SCREEN_HEIGHT - 2);
-            gal_puts("Z: ");
-            gal_gotoxy(1, SCREEN_HEIGHT - 1);
-            gal_puts("ITER: ");
-            ignore_s_ticks = 15;
-        } else {
-            print_labels = STATS_OFF;
-            gal_gotoxy(1, SCREEN_HEIGHT - 4);
-            gal_puts("         ");
-            gal_gotoxy(1, SCREEN_HEIGHT - 3);
-            gal_puts("         ");
-            gal_gotoxy(1, SCREEN_HEIGHT - 2);
-            gal_puts("         ");
-            gal_gotoxy(1, SCREEN_HEIGHT - 1);
-            gal_puts("*************");
-            ignore_s_ticks = 15;
-        }
-        break;
-    default:
-        break;
     }
 
-    if (ignore_s_ticks > 0)
+    if (ignore_button_ticks > 0)
     {
-        ignore_s_ticks--;
+        ignore_button_ticks--;
     }
     iteration++;
     goto ITER;
