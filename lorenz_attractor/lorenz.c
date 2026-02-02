@@ -22,7 +22,6 @@
 #define FIXED_MUL(a, b) (FROM_FIXED(((a) * (b))))
 
 // TODO:
-// - Commands legend
 // - Better formating of stats display
 // - Add visit count to path history so the pixel deletion is correct
 // - Use different chars for path history fading
@@ -54,6 +53,66 @@ int oldest_path_index = 0;
 enum stats_visibility print_labels = STATS_OFF;
 int ignore_button_ticks = 0;
 uint32_t iteration = 1;
+
+/* Print welcome screen */
+void print_welcome_screen()
+{
+    int i;
+
+    // Welcome screen
+    gal_cls();
+
+    // Vertical border
+    for (i = 0; i < SCREEN_HEIGHT - 0; i++) {
+        gal_gotoxy(0, i);
+        gal_putc('*');
+        gal_gotoxy(SCREEN_WIDTH - 1, i);
+        gal_putc('*');
+    }
+
+    // Horizontal border
+    for (i = 1; i < SCREEN_WIDTH - 1; i++) {
+        gal_gotoxy(i, 0);
+        gal_putc('*');
+        gal_gotoxy(i, SCREEN_HEIGHT - 1);
+        gal_putc('*');
+    }
+
+    // Title
+    gal_gotoxy(6, SCREEN_HEIGHT_HALF - 4);
+    gal_puts("********************");
+    gal_gotoxy(6, SCREEN_HEIGHT_HALF - 3);
+    gal_puts("* LORENZ ATTRACTOR *");
+    gal_gotoxy(6, SCREEN_HEIGHT_HALF - 2);
+    gal_puts("********************");
+
+    gal_gotoxy(6, SCREEN_HEIGHT_HALF);
+    gal_puts("BY NIKOLA JOVANOVI");
+    gal_putc(92);
+
+    // Commands
+    gal_gotoxy(2, SCREEN_HEIGHT_HALF + 2);
+    gal_puts("1 - XY VIEW");
+    gal_gotoxy(2, SCREEN_HEIGHT_HALF + 3);
+    gal_puts("2 - XZ VIEW");
+    gal_gotoxy(2, SCREEN_HEIGHT_HALF + 4);
+    gal_puts("3 - YZ VIEW");
+    gal_gotoxy(2, SCREEN_HEIGHT_HALF + 5);
+    gal_puts("S - TOGGLE STATS");
+
+    // Enter prompt
+    gal_gotoxy(20, SCREEN_HEIGHT - 2);
+    gal_puts("PRESS ENTER");
+}
+
+/* Clears the welcome screen */
+void clear_welcome_screen()
+{
+    for (int i = 1; i < SCREEN_HEIGHT - 1; i++) {
+        gal_gotoxy(1, i);
+        gal_puts("                              ");
+    }
+}
 
 /* Prints an int value to the screen, location should already be set.
   Adds minus if negative, adds spaces if less than 3 digits. */
@@ -152,38 +211,7 @@ void reset_path_history(enum reset_erase_mode erase_mode)
 
 int main()
 {
-    int i;
-
-    // Welcome screen
-    gal_cls();
-
-    // Vertical border
-    for (i = 0; i < SCREEN_HEIGHT - 0; i++) {
-        gal_gotoxy(0, i);
-        gal_putc('*');
-        gal_gotoxy(SCREEN_WIDTH - 1, i);
-        gal_putc('*');
-    }
-
-    // Horizontal border
-    for (i = 1; i < SCREEN_WIDTH - 1; i++) {
-        gal_gotoxy(i, 0);
-        gal_putc('*');
-        gal_gotoxy(i, SCREEN_HEIGHT - 1);
-        gal_putc('*');
-    }
-
-    // Title
-    gal_gotoxy(6, SCREEN_HEIGHT_HALF - 2);
-    gal_puts("********************");
-    gal_gotoxy(6, SCREEN_HEIGHT_HALF - 1);
-    gal_puts("* LORENZ ATTRACTOR *");
-    gal_gotoxy(6, SCREEN_HEIGHT_HALF);
-    gal_puts("********************");
-
-    // Enter prompt
-    gal_gotoxy(20, SCREEN_HEIGHT - 2);
-    gal_puts("PRESS ENTER");
+    print_welcome_screen();
 
     // Wait for Enter key
     unsigned char char_input;
@@ -192,14 +220,7 @@ int main()
     } while (char_input != KEY_ENTER);
 
     // Remove title and prompt
-    gal_gotoxy(6, SCREEN_HEIGHT_HALF - 2);
-    gal_puts("                    ");
-    gal_gotoxy(6, SCREEN_HEIGHT_HALF - 1);
-    gal_puts("                    ");
-    gal_gotoxy(6, SCREEN_HEIGHT_HALF);
-    gal_puts("                    ");
-    gal_gotoxy(20, SCREEN_HEIGHT - 2);
-    gal_puts("           ");
+    clear_welcome_screen();
 
     // Lorenz attractor parameters
     int32_t ro = TO_FIXED(28.0);
