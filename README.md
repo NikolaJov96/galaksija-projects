@@ -35,3 +35,9 @@ The following online emulators are completely compatible with the original hardw
 
 - [Emulator 1](https://galaksija.epizy.com/Galaksija/jsgalmin_lite.html)
 - [Emulator 2](https://galaksija.net/)
+
+## Heritage programming peculiarities
+
+- All arrays are defined globally because stack memory is too limited.
+- For consistency, all other variables are defined globally, too, except loop iterators.
+- Defines and code duplication are not sins, because every cycle counts, and function calls are not free.
