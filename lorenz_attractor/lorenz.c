@@ -35,9 +35,9 @@
 #define FIXED_MUL(a, b) (FROM_FIXED(((a) * (b))))
 
 // TODO:
-// - Add visit count to path history so the pixel deletion is correct
-// - Use different chars for path history fading
 // - Use dot instead of char resolution
+// - Use different chars for path history fading
+// - Connect points on screen if there is a gap
 
 /* Marks the camera view angle of the system */
 enum view_axis {
@@ -57,9 +57,12 @@ enum reset_erase_mode {
 // Path history tracking variables
 
 /* History of the last PATH_LENGTH X screen coordinates */
-int positions_x[PATH_LENGTH];
+char positions_x[PATH_LENGTH];
 /* History of the last PATH_LENGTH Y screen coordinates */
-int positions_y[PATH_LENGTH];
+char positions_y[PATH_LENGTH];
+/* Simulation can pass multiple times through a same pixel,
+   so we keep track of how many times each pixel was visited */
+unsigned char visit_count[SCREEN_HEIGHT][SCREEN_WIDTH];
 /* Index of the current position in revolving path history arrays */
 int path_index = 0;
 /* Helper variable containing the index of the oldest position in path history */
@@ -108,9 +111,9 @@ int32_t dy = 0;
 /* Change in Z coordinate in the current step */
 int32_t dz = 0;
 /* Screen X coordinate of the system */
-int screen_x = SCREEN_WIDTH_HALF;
+char screen_x = SCREEN_WIDTH_HALF;
 /* Screen Y coordinate of the system */
-int screen_y = SCREEN_HEIGHT_HALF;
+char screen_y = SCREEN_HEIGHT_HALF;
 
 /* Print welcome screen */
 void print_welcome_screen()
@@ -282,7 +285,9 @@ void toggle_stats()
    because the arrays are yet to be initialized to -1. */
 void reinitialize_path_history(enum reset_erase_mode erase_mode)
 {
-    for (int i = 0; i < PATH_LENGTH; i++)
+    int i, j;
+
+    for (i = 0; i < PATH_LENGTH; i++)
     {
         if (erase_mode == ERASE && positions_x[i] != -1 && positions_y[i] != -1)
         {
@@ -293,6 +298,15 @@ void reinitialize_path_history(enum reset_erase_mode erase_mode)
         positions_x[i] = -1;
         positions_y[i] = -1;
     }
+
+    for (i = 0; i < SCREEN_HEIGHT; i++)
+    {
+        for (j = 0; j < SCREEN_WIDTH; j++)
+        {
+            visit_count[i][j] = 0;
+        }
+    }
+
     path_index = 0;
 }
 
@@ -388,8 +402,12 @@ SIM_ITER:
         oldest_path_index = (path_index + 1) & (PATH_LENGTH - 1);
         if (positions_x[oldest_path_index] != -1 && positions_y[oldest_path_index] != -1)
         {
-            gal_gotoxy(positions_x[oldest_path_index], positions_y[oldest_path_index]);
-            gal_putc(' ');
+            visit_count[positions_y[oldest_path_index]][positions_x[oldest_path_index]]--;
+            if (visit_count[positions_y[oldest_path_index]][positions_x[oldest_path_index]] == 0)
+            {
+                gal_gotoxy(positions_x[oldest_path_index], positions_y[oldest_path_index]);
+                gal_putc(' ');
+            }
         }
 
         // Move to the next position in the path history
@@ -398,6 +416,7 @@ SIM_ITER:
         // Store new position in history
         positions_x[path_index] = screen_x;
         positions_y[path_index] = screen_y;
+        visit_count[screen_y][screen_x]++;
 
         gal_gotoxy(screen_x, screen_y);
         gal_putc('#');
