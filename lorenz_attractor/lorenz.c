@@ -219,7 +219,6 @@ int main()
         char_input = fgetc_cons();
     } while (char_input != KEY_ENTER);
 
-    // Remove title and prompt
     clear_welcome_screen();
 
     // Lorenz attractor parameters
