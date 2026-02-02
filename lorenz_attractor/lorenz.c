@@ -344,9 +344,7 @@ int main()
     print_welcome_screen();
 
     // Wait for Enter key
-    do {
-        char_input = fgetc_cons();
-    } while (char_input != KEY_ENTER);
+    while (fgetc_cons() != KEY_ENTER);
 
     clear_welcome_screen();
 
