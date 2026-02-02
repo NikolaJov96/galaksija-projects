@@ -21,6 +21,15 @@
 #define FROM_FIXED(x) ((x) >> FP_SHIFT)
 #define FIXED_MUL(a, b) (FROM_FIXED(((a) * (b))))
 
+// TODO:
+// - (0, 0) border pixel gets deleted
+// - Commands legend
+// - Better formating of stats display
+// - Add visit count to path history so the pixel deletion is correct
+// - Use different chars for path history fading
+// - Use dot instead of char resolution
+
+
 /* Marks the camera view angle of the system */
 enum view_axis {
     ASIS_XY, ASIS_XZ, ASIS_YZ
@@ -41,7 +50,7 @@ int oldest_path_index = 0;
 enum stats_visibility print_labels = STATS_OFF;
 int ignore_button_ticks = 0;
 uint32_t iteration = 1;
-char num_str[32];
+char num_str[7];
 
 /* Prints an int value into a string, adds minus if negative, adds spaces if less than 3 digits. */
 void print_int_3(int value)
@@ -79,7 +88,7 @@ void print_int_3(int value)
     num_str[i++] = 0;
 }
 
-/* Prints a positive long int value into a string. */
+/* Prints a positive long int value into a string with max 6 digits. */
 void print_int_6(int32_t value)
 {
     int32_t max_value = 999999;
@@ -171,10 +180,10 @@ int main()
     gal_puts("PRESS ENTER");
 
     // Wait for Enter key
-    unsigned char input;
+    unsigned char char_input;
     do {
-        input = fgetc_cons();
-    } while (input != KEY_ENTER);
+        char_input = fgetc_cons();
+    } while (char_input != KEY_ENTER);
 
     // Remove title and prompt
     gal_gotoxy(6, SCREEN_HEIGHT_HALF - 2);
@@ -228,15 +237,15 @@ ITER:
     {
         case ASIS_XY:
             screen_x = SCREEN_WIDTH_HALF + FROM_FIXED(x) / 2;
-            screen_y = SCREEN_HEIGHT_HALF + FROM_FIXED(y) / 2;
+            screen_y = SCREEN_HEIGHT_HALF - FROM_FIXED(y) / 2;
             break;
         case ASIS_XZ:
             screen_x = SCREEN_WIDTH_HALF + FROM_FIXED(x) / 2;
-            screen_y = SCREEN_HEIGHT_HALF + (FROM_FIXED(z) - 25) / 2;
+            screen_y = SCREEN_HEIGHT_HALF - (FROM_FIXED(z) - 25) / 2;
             break;
         case ASIS_YZ:
             screen_x = SCREEN_WIDTH_HALF + FROM_FIXED(y) / 2;
-            screen_y = SCREEN_HEIGHT_HALF + (FROM_FIXED(z) - 25) / 2;
+            screen_y = SCREEN_HEIGHT_HALF - (FROM_FIXED(z) - 25) / 2;
             break;
     }
 
@@ -288,23 +297,34 @@ ITER:
 
     if (ignore_button_ticks == 0)
     {
-        input = getk();
-        switch (input)
+        char_input = getk();
+        switch (char_input)
         {
         case KEY_1:
-            projection = ASIS_XY;
-            reset_path_history();
-            ignore_button_ticks = 15;
+            if (projection != ASIS_XY)
+            {
+                projection = ASIS_XY;
+                reset_path_history();
+                ignore_button_ticks = 15;
+            }
             break;
         case KEY_2:
-            projection = ASIS_XZ;
-            reset_path_history();
-            ignore_button_ticks = 15;
+            if (projection != ASIS_XZ)
+            {
+                projection = ASIS_XZ;
+                reset_path_history();
+                ignore_button_ticks = 15;
+            }
             break;
         case KEY_3:
-            projection = ASIS_YZ;
-            reset_path_history();
-            ignore_button_ticks = 15;
+
+            if (projection != ASIS_YZ)
+            {
+                projection = ASIS_YZ;
+                reset_path_history();
+                ignore_button_ticks = 15;
+            }
+            break;
             break;
         case KEY_S:
             if (print_labels == STATS_OFF) {
