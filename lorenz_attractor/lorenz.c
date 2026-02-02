@@ -55,9 +55,9 @@ int oldest_path_index = 0;
 enum stats_visibility print_labels = STATS_OFF;
 int ignore_button_ticks = 0;
 uint32_t iteration = 1;
-char num_str[7];
 
-/* Prints an int value into a string, adds minus if negative, adds spaces if less than 3 digits. */
+/* Prints an int value to the screen, location should already be set.
+  Adds minus if negative, adds spaces if less than 3 digits. */
 void print_int_3(int value)
 {
     int max_value = 99;
@@ -65,7 +65,8 @@ void print_int_3(int value)
     int i = 0;
 
     if (value < 0) {
-        num_str[i++] = '-';
+        gal_putc('-');
+        i++;
         value = -value;
     }
 
@@ -77,23 +78,24 @@ void print_int_3(int value)
     if (value >= 10)
     {
         digit = value / 10;
-        num_str[i++] = '0' + digit;
+        gal_putc('0' + digit);
+        i++;
         value -= digit * 10;
     }
 
     // Value is now a single digit
-    num_str[i++] = '0' + value;
+    gal_putc('0' + value);
+    i++;
 
     // Pad with spaces if needed
     while (i < 3) {
-        num_str[i++] = ' ';
+        gal_putc(' ');
+        i++;
     }
-
-    // Null-terminate
-    num_str[i++] = 0;
 }
 
-/* Prints a positive long int value into a string with max 6 digits. */
+/* Prints a positive long int value to screen with max 6 digits,
+  location should already be set. */
 void print_int_6(int32_t value)
 {
     int32_t max_value = 999999;
@@ -116,21 +118,21 @@ void print_int_6(int32_t value)
         if (value >= max_value)
         {
             digit = value / max_value;
-            num_str[i++] = '0' + digit;
+            gal_putc('0' + digit);
+            i++;
             value -= digit * max_value;
         }
         else
         {
-            num_str[i++] = '0';
+            gal_putc('0');
+            i++;
         }
         max_value /= 10;
     }
 
     // Value is now a single digit
-    num_str[i++] = '0' + value;
-
-    // Null-terminate
-    num_str[i++] = 0;
+    gal_putc('0' + (char)value);
+    i++;
 }
 
 void reset_path_history(enum reset_erase_mode erase_mode)
@@ -285,19 +287,15 @@ ITER:
     {
         gal_gotoxy(4, SCREEN_HEIGHT - 4);
         print_int_3(FROM_FIXED((int)x));
-        gal_puts(num_str);
 
         gal_gotoxy(4, SCREEN_HEIGHT - 3);
         print_int_3(FROM_FIXED((int)y));
-        gal_puts(num_str);
 
         gal_gotoxy(4, SCREEN_HEIGHT - 2);
         print_int_3(FROM_FIXED((int)z));
-        gal_puts(num_str);
 
         gal_gotoxy(7, SCREEN_HEIGHT - 1);
         print_int_6((int)iteration);
-        gal_puts(num_str);
     }
 
     if (ignore_button_ticks == 0)
