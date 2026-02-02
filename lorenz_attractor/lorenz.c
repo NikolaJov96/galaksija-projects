@@ -22,7 +22,6 @@
 #define FIXED_MUL(a, b) (FROM_FIXED(((a) * (b))))
 
 // TODO:
-// - (0, 0) border pixel gets deleted
 // - Commands legend
 // - Better formating of stats display
 // - Add visit count to path history so the pixel deletion is correct
