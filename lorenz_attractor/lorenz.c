@@ -40,19 +40,13 @@
 // - Connect points on screen if there is a gap
 
 /* Marks the camera view angle of the system */
-enum view_axis {
-    ASIS_XY, ASIS_XZ, ASIS_YZ
-};
+enum view_axis { ASIS_XY, ASIS_XZ, ASIS_YZ };
 
 /* Marks whether statistics are visible */
-enum stats_visibility {
-    STATS_OFF, STATS_ON
-};
+enum stats_visibility { STATS_OFF, STATS_ON };
 
 /* Should path reset erase the path history pixels */
-enum reset_erase_mode {
-    NO_ERASE, ERASE
-};
+enum reset_erase_mode { NO_ERASE, ERASE };
 
 // Path history tracking variables
 
