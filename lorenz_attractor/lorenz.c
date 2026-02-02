@@ -3,10 +3,24 @@
 
 #include "galaksija.h"
 
+// Screen dimensions in the number of characters.
+// This is how Galaksija video memory is indexed.
+
 #define SCREEN_WIDTH 32
-#define SCREEN_WIDTH_HALF 16
+#define SCREEN_WIDTH_HALF SCREEN_WIDTH / 2
 #define SCREEN_HEIGHT 16
-#define SCREEN_HEIGHT_HALF 8
+#define SCREEN_HEIGHT_HALF SCREEN_HEIGHT / 2
+
+// Grid dimensions in the number of "pixels".
+// Each character represents a 2x3 pixel block.
+// Galaksija provides a char for every combination of these 6 pixels,
+// so we can work with the higher resolution internally and map it to
+// characters only when drawing to the screen.
+
+#define GRID_WIDTH SCREEN_WIDTH * 2
+#define GRID_WIDTH_HALF GRID_WIDTH / 2
+#define GRID_HEIGHT SCREEN_HEIGHT * 3
+#define GRID_HEIGHT_HALF GRID_HEIGHT / 2
 
 #define KEY_ENTER 10
 #define KEY_1 49
@@ -14,7 +28,7 @@
 #define KEY_3 51
 #define KEY_S 83
 
-#define PATH_LENGTH_SHIFT 5
+#define PATH_LENGTH_SHIFT 8
 /* Length of the path history array.
    Chosen to be a power of two so the modulo operation
    can be optimized to a bitwise AND.*/
@@ -35,9 +49,10 @@
 #define FIXED_MUL(a, b) (FROM_FIXED(((a) * (b))))
 
 // TODO:
-// - Use dot instead of char resolution
 // - Use different chars for path history fading
 // - Connect points on screen if there is a gap
+// - Separate screen for command help
+// - Command to change dt
 
 /* Marks the camera view angle of the system */
 enum view_axis { ASIS_XY, ASIS_XZ, ASIS_YZ };
@@ -45,8 +60,8 @@ enum view_axis { ASIS_XY, ASIS_XZ, ASIS_YZ };
 /* Marks whether statistics are visible */
 enum stats_visibility { STATS_OFF, STATS_ON };
 
-/* Should path reset erase the path history pixels */
-enum reset_erase_mode { NO_ERASE, ERASE };
+/* At which stage of the program execution is function called */
+enum call_mode { CALL_INIT, CALL_RUN };
 
 // Path history tracking variables
 
@@ -56,13 +71,13 @@ char positions_x[PATH_LENGTH];
 char positions_y[PATH_LENGTH];
 /* Simulation can pass multiple times through a same pixel,
    so we keep track of how many times each pixel was visited */
-unsigned char visit_count[SCREEN_HEIGHT][SCREEN_WIDTH];
+unsigned char visit_count[GRID_HEIGHT][GRID_WIDTH];
 /* Index of the current position in revolving path history arrays */
 int path_index = 0;
 /* Helper variable containing the index of the oldest position in path history */
 int oldest_path_index = 0;
 
-// Display stats
+// Display utility variables
 
 /* Stats visiblity flag */
 enum stats_visibility print_stats = STATS_OFF;
@@ -74,7 +89,7 @@ unsigned char char_input;
 uint32_t iteration = 1;
 
 // Lorenz attractor parameters
-// Parameters are hardcoded to values that produce a chaotic behavior
+// Parameters are hardcoded to values that produce the desired chaotic behavior
 
 /* The first of the Lorenz attractor parameters */
 int32_t ro = TO_FIXED(28.0);
@@ -99,39 +114,26 @@ enum view_axis projection = ASIS_XZ;
 // Simulation helper variables
 
 /* Change in X coordinate in the current step */
-int32_t dx = 0;
+int32_t dx;
 /* Change in Y coordinate in the current step */
-int32_t dy = 0;
+int32_t dy;
 /* Change in Z coordinate in the current step */
-int32_t dz = 0;
+int32_t dz;
+/* Grid X coordinate of the system */
+char grid_x;
+/* Grid Y coordinate of the system */
+char grid_y;
 /* Screen X coordinate of the system */
-char screen_x = SCREEN_WIDTH_HALF;
+char screen_x;
 /* Screen Y coordinate of the system */
-char screen_y = SCREEN_HEIGHT_HALF;
+char screen_y;
 
 /* Print welcome screen */
 void print_welcome_screen()
 {
     int i;
 
-    // Welcome screen
     gal_cls();
-
-    // Vertical border
-    for (i = 0; i < SCREEN_HEIGHT - 0; i++) {
-        gal_gotoxy(0, i);
-        gal_putc('*');
-        gal_gotoxy(SCREEN_WIDTH - 1, i);
-        gal_putc('*');
-    }
-
-    // Horizontal border
-    for (i = 1; i < SCREEN_WIDTH - 1; i++) {
-        gal_gotoxy(i, 0);
-        gal_putc('*');
-        gal_gotoxy(i, SCREEN_HEIGHT - 1);
-        gal_putc('*');
-    }
 
     // Title
     gal_gotoxy(6, SCREEN_HEIGHT_HALF - 4);
@@ -274,30 +276,88 @@ void toggle_stats()
     }
 }
 
+/* Updates the screen character at the screen_x, screen_y position.
+   Checks the the appropriate 6 pixels for the visit count array,
+   calculates the appropriate character, and updates the screen */
+void update_screen_char()
+{
+    const unsigned char x = screen_x * 2;
+    const unsigned char y = screen_y * 3;
+
+    char_input = 128;
+    char_input += (visit_count[y][x] > 0) * 1;
+    char_input += (visit_count[y][x + 1] > 0) * 2;
+    char_input += (visit_count[y + 1][x] > 0) * 4;
+    char_input += (visit_count[y + 1][x + 1] > 0) * 8;
+    char_input += (visit_count[y + 2][x] > 0) * 16;
+    char_input += (visit_count[y + 2][x + 1] > 0) * 32;
+
+    gal_gotoxy(screen_x, screen_y);
+    gal_putc(char_input);
+}
+
 /* Resets the path history arrays to -1. Optionally, erases the currently drawn points.
    Erasing should be disabled when called for the first time
    because the arrays are yet to be initialized to -1. */
-void reinitialize_path_history(enum reset_erase_mode erase_mode)
+void reinitialize_path_history(enum call_mode call_mode)
 {
-    int i, j;
+    int i;
 
+    // First, reset visit counts to make sure the screen update
+    // will work correctly in the next loop.
     for (i = 0; i < PATH_LENGTH; i++)
     {
-        if (erase_mode == ERASE && positions_x[i] != -1 && positions_y[i] != -1)
+        visit_count[positions_y[i]][positions_x[i]] = 0;
+    }
+
+    // Reset the position arrays and update the screen
+    for (i = 0; i < PATH_LENGTH; i++)
+    {
+        if (call_mode == CALL_RUN && positions_x[i] != -1 && positions_y[i] != -1)
         {
-            gal_gotoxy(positions_x[i], positions_y[i]);
-            gal_putc(' ');
+            screen_x = positions_x[i] / 2;
+            screen_y = positions_y[i] / 3;
+            update_screen_char();
         }
 
         positions_x[i] = -1;
         positions_y[i] = -1;
     }
 
-    for (i = 0; i < SCREEN_HEIGHT; i++)
+    // First call to this function, initialize the border cells.
+    // These will remain untouched throughout the simulation.
+    if (call_mode == CALL_INIT)
     {
-        for (j = 0; j < SCREEN_WIDTH; j++)
+        // Initialize border grid cells
+        for (i = 0; i < GRID_HEIGHT; i++)
         {
-            visit_count[i][j] = 0;
+            visit_count[i][0] = 1;
+            visit_count[i][GRID_WIDTH - 1] = 1;
+        }
+        for (i = 0; i < GRID_WIDTH; i++)
+        {
+            visit_count[0][i] = 1;
+            visit_count[GRID_HEIGHT - 1][i] = 1;
+        }
+
+        // Draw border pixels
+        for (i = 0; i < SCREEN_HEIGHT; i++)
+        {
+            screen_x = 0;
+            screen_y = i;
+            update_screen_char();
+            screen_x = SCREEN_WIDTH - 1;
+            screen_y = i;
+            update_screen_char();
+        }
+        for (i = 0; i < SCREEN_WIDTH; i++)
+        {
+            screen_x = i;
+            screen_y = 0;
+            update_screen_char();
+            screen_x = i;
+            screen_y = SCREEN_HEIGHT - 1;
+            update_screen_char();
         }
     }
 
@@ -316,7 +376,7 @@ void handle_user_input()
             if (projection != ASIS_XY)
             {
                 projection = ASIS_XY;
-                reinitialize_path_history(ERASE);
+                reinitialize_path_history(CALL_RUN);
             }
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
@@ -324,7 +384,7 @@ void handle_user_input()
             if (projection != ASIS_XZ)
             {
                 projection = ASIS_XZ;
-                reinitialize_path_history(ERASE);
+                reinitialize_path_history(CALL_RUN);
             }
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
@@ -332,7 +392,7 @@ void handle_user_input()
             if (projection != ASIS_YZ)
             {
                 projection = ASIS_YZ;
-                reinitialize_path_history(ERASE);
+                reinitialize_path_history(CALL_RUN);
             }
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
@@ -353,10 +413,9 @@ void handle_user_input()
 int main()
 {
     print_welcome_screen();
+    reinitialize_path_history(CALL_INIT);
     while (fgetc_cons() != KEY_ENTER);
     clear_welcome_screen();
-
-    reinitialize_path_history(NO_ERASE);
 
 SIM_ITER:
     // Compute derivatives
@@ -369,51 +428,54 @@ SIM_ITER:
     y += FIXED_MUL(dy, dt);
     z += FIXED_MUL(dz, dt);
 
-    // Map state to screen coordinates
+    // Map system state to grid coordinates
+    // NOTE: It's incredible that the Lorenz attractor range of values for
+    // all three variables fits perfectly within the Galaksija screen bounds.
+    // There is no need for even a slight scale adjustment.
     switch (projection)
     {
         case ASIS_XY:
-            screen_x = SCREEN_WIDTH_HALF + FROM_FIXED(x) / 2;
-            screen_y = SCREEN_HEIGHT_HALF - FROM_FIXED(y) / 2;
+            grid_x = GRID_WIDTH_HALF + FROM_FIXED(x);
+            grid_y = GRID_HEIGHT_HALF - FROM_FIXED(y);
             break;
         case ASIS_XZ:
-            screen_x = SCREEN_WIDTH_HALF + FROM_FIXED(x) / 2;
-            screen_y = SCREEN_HEIGHT_HALF - (FROM_FIXED(z) - 25) / 2;
+            grid_x = GRID_WIDTH_HALF + FROM_FIXED(x);
+            grid_y = GRID_HEIGHT_HALF - (FROM_FIXED(z) - 25);
             break;
         case ASIS_YZ:
-            screen_x = SCREEN_WIDTH_HALF + FROM_FIXED(y) / 2;
-            screen_y = SCREEN_HEIGHT_HALF - (FROM_FIXED(z) - 25) / 2;
+            grid_x = GRID_WIDTH_HALF + FROM_FIXED(y);
+            grid_y = GRID_HEIGHT_HALF - (FROM_FIXED(z) - 25);
             break;
     }
 
     // Update the screen and path history if the point is within screen bounds
     // and has moved since the last iteration
-    if (screen_x >= 1 && screen_x < SCREEN_WIDTH - 1 &&
-        screen_y >= 1 && screen_y < SCREEN_HEIGHT - 1 &&
-        (screen_x != positions_x[path_index] || screen_y != positions_y[path_index]))
+    if (grid_x >= 1 && grid_x < GRID_WIDTH - 1 &&
+        grid_y >= 1 && grid_y < GRID_HEIGHT - 1 &&
+        (grid_x != positions_x[path_index] || grid_y != positions_y[path_index]))
     {
         // Erase oldest point in path history
         oldest_path_index = (path_index + 1) & (PATH_LENGTH - 1);
         if (positions_x[oldest_path_index] != -1 && positions_y[oldest_path_index] != -1)
         {
             visit_count[positions_y[oldest_path_index]][positions_x[oldest_path_index]]--;
-            if (visit_count[positions_y[oldest_path_index]][positions_x[oldest_path_index]] == 0)
-            {
-                gal_gotoxy(positions_x[oldest_path_index], positions_y[oldest_path_index]);
-                gal_putc(' ');
-            }
+            screen_x = positions_x[oldest_path_index] / 2;
+            screen_y = positions_y[oldest_path_index] / 3;
+            update_screen_char();
         }
 
         // Move to the next position in the path history
         path_index = oldest_path_index;
 
         // Store new position in history
-        positions_x[path_index] = screen_x;
-        positions_y[path_index] = screen_y;
-        visit_count[screen_y][screen_x]++;
+        positions_x[path_index] = grid_x;
+        positions_y[path_index] = grid_y;
+        visit_count[grid_y][grid_x]++;
 
-        gal_gotoxy(screen_x, screen_y);
-        gal_putc('#');
+        // Update the screen character at new position
+        screen_x = grid_x / 2;
+        screen_y = grid_y / 3;
+        update_screen_char();
     }
 
     // Update stats display if enabled
