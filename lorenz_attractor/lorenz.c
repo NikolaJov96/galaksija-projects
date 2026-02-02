@@ -277,7 +277,10 @@ void toggle_stats()
     }
 }
 
-void reset_path_history(enum reset_erase_mode erase_mode)
+/* Resets the path history arrays to -1. Optionally, erases the currently drawn points.
+   Erasing should be disabled when called for the first time
+   because the arrays are yet to be initialized to -1. */
+void reinitialize_path_history(enum reset_erase_mode erase_mode)
 {
     for (int i = 0; i < PATH_LENGTH; i++)
     {
@@ -305,7 +308,7 @@ void handle_user_input()
             if (projection != ASIS_XY)
             {
                 projection = ASIS_XY;
-                reset_path_history(ERASE);
+                reinitialize_path_history(ERASE);
             }
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
@@ -313,7 +316,7 @@ void handle_user_input()
             if (projection != ASIS_XZ)
             {
                 projection = ASIS_XZ;
-                reset_path_history(ERASE);
+                reinitialize_path_history(ERASE);
             }
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
@@ -321,7 +324,7 @@ void handle_user_input()
             if (projection != ASIS_YZ)
             {
                 projection = ASIS_YZ;
-                reset_path_history(ERASE);
+                reinitialize_path_history(ERASE);
             }
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
@@ -342,14 +345,10 @@ void handle_user_input()
 int main()
 {
     print_welcome_screen();
-
-    // Wait for Enter key
     while (fgetc_cons() != KEY_ENTER);
-
     clear_welcome_screen();
 
-    // Path history without erasing, because the arrays are uninitialized
-    reset_path_history(NO_ERASE);
+    reinitialize_path_history(NO_ERASE);
 
 SIM_ITER:
     // Compute derivatives
