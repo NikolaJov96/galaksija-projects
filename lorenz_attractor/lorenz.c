@@ -40,6 +40,11 @@ enum stats_visibility {
     STATS_OFF, STATS_ON
 };
 
+/* Should path reset erase the path history pixels */
+enum reset_erase_mode {
+    NO_ERASE, ERASE
+};
+
 // Path history variables, globals to preserve stack space
 int positions_x[PATH_LENGTH];
 int positions_y[PATH_LENGTH];
@@ -128,11 +133,11 @@ void print_int_6(int32_t value)
     num_str[i++] = 0;
 }
 
-void reset_path_history()
+void reset_path_history(enum reset_erase_mode erase_mode)
 {
     for (int i = 0; i < PATH_LENGTH; i++)
     {
-        if (positions_x[i] != -1 && positions_y[i] != -1)
+        if (erase_mode == ERASE && positions_x[i] != -1 && positions_y[i] != -1)
         {
             gal_gotoxy(positions_x[i], positions_y[i]);
             gal_putc(' ');
@@ -205,8 +210,8 @@ int main()
     int32_t y = TO_FIXED(1.0);
     int32_t z = TO_FIXED(1.0);
 
-    // Path history
-    reset_path_history();
+    // Path history without erasing, because the arrays are uninitialized
+    reset_path_history(NO_ERASE);
 
     // Time step
     int32_t dt = TO_FIXED(0.01);
@@ -304,7 +309,7 @@ ITER:
             if (projection != ASIS_XY)
             {
                 projection = ASIS_XY;
-                reset_path_history();
+                reset_path_history(ERASE);
                 ignore_button_ticks = 15;
             }
             break;
@@ -312,7 +317,7 @@ ITER:
             if (projection != ASIS_XZ)
             {
                 projection = ASIS_XZ;
-                reset_path_history();
+                reset_path_history(ERASE);
                 ignore_button_ticks = 15;
             }
             break;
@@ -321,7 +326,7 @@ ITER:
             if (projection != ASIS_YZ)
             {
                 projection = ASIS_YZ;
-                reset_path_history();
+                reset_path_history(ERASE);
                 ignore_button_ticks = 15;
             }
             break;
