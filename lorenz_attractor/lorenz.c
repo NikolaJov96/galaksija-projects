@@ -7,6 +7,7 @@
 #define SCREEN_WIDTH_HALF 16
 #define SCREEN_HEIGHT 16
 #define SCREEN_HEIGHT_HALF 8
+
 #define KEY_ENTER 10
 #define KEY_1 49
 #define KEY_2 50
@@ -16,13 +17,14 @@
 #define PATH_LENGTH_SHIFT 5
 #define PATH_LENGTH (1l << PATH_LENGTH_SHIFT)
 
+#define IGNORE_BUTTON_TICKS 15
+
 #define FP_SHIFT 8
 #define TO_FIXED(x) ((int32_t)((x) * (1l << FP_SHIFT)))
 #define FROM_FIXED(x) ((x) >> FP_SHIFT)
 #define FIXED_MUL(a, b) (FROM_FIXED(((a) * (b))))
 
 // TODO:
-// - Better formating of stats display
 // - Add visit count to path history so the pixel deletion is correct
 // - Use different chars for path history fading
 // - Use dot instead of char resolution
@@ -49,8 +51,8 @@ int positions_y[PATH_LENGTH];
 int path_index = 0;
 int oldest_path_index = 0;
 
-// Display labels
-enum stats_visibility print_labels = STATS_OFF;
+// Display stats
+enum stats_visibility print_stats = STATS_OFF;
 int ignore_button_ticks = 0;
 uint32_t iteration = 1;
 
@@ -193,6 +195,32 @@ void print_int_6(int32_t value)
     i++;
 }
 
+/* Handles initialization and cleaning of stats display */
+void toggle_stats()
+{
+    if (print_stats == STATS_OFF) {
+        print_stats = STATS_ON;
+        gal_gotoxy(1, SCREEN_HEIGHT - 5);
+        gal_puts("X: ");
+        gal_gotoxy(1, SCREEN_HEIGHT - 4);
+        gal_puts("Y: ");
+        gal_gotoxy(1, SCREEN_HEIGHT - 3);
+        gal_puts("Z: ");
+        gal_gotoxy(1, SCREEN_HEIGHT - 2);
+        gal_puts("ITER: ");
+    } else {
+        print_stats = STATS_OFF;
+        gal_gotoxy(1, SCREEN_HEIGHT - 5);
+        gal_puts("         ");
+        gal_gotoxy(1, SCREEN_HEIGHT - 4);
+        gal_puts("         ");
+        gal_gotoxy(1, SCREEN_HEIGHT - 3);
+        gal_puts("         ");
+        gal_gotoxy(1, SCREEN_HEIGHT - 2);
+        gal_puts("            ");
+    }
+}
+
 void reset_path_history(enum reset_erase_mode erase_mode)
 {
     for (int i = 0; i < PATH_LENGTH; i++)
@@ -302,18 +330,18 @@ ITER:
     }
 
     // Update iteration count
-    if (print_labels == STATS_ON)
+    if (print_stats == STATS_ON)
     {
-        gal_gotoxy(4, SCREEN_HEIGHT - 4);
+        gal_gotoxy(4, SCREEN_HEIGHT - 5);
         print_int_3(FROM_FIXED((int)x));
 
-        gal_gotoxy(4, SCREEN_HEIGHT - 3);
+        gal_gotoxy(4, SCREEN_HEIGHT - 4);
         print_int_3(FROM_FIXED((int)y));
 
-        gal_gotoxy(4, SCREEN_HEIGHT - 2);
+        gal_gotoxy(4, SCREEN_HEIGHT - 3);
         print_int_3(FROM_FIXED((int)z));
 
-        gal_gotoxy(7, SCREEN_HEIGHT - 1);
+        gal_gotoxy(7, SCREEN_HEIGHT - 2);
         print_int_6((int)iteration);
     }
 
@@ -327,16 +355,16 @@ ITER:
             {
                 projection = ASIS_XY;
                 reset_path_history(ERASE);
-                ignore_button_ticks = 15;
             }
+            ignore_button_ticks = IGNORE_BUTTON_TICKS;
             break;
         case KEY_2:
             if (projection != ASIS_XZ)
             {
                 projection = ASIS_XZ;
                 reset_path_history(ERASE);
-                ignore_button_ticks = 15;
             }
+            ignore_button_ticks = IGNORE_BUTTON_TICKS;
             break;
         case KEY_3:
 
@@ -344,44 +372,24 @@ ITER:
             {
                 projection = ASIS_YZ;
                 reset_path_history(ERASE);
-                ignore_button_ticks = 15;
             }
-            break;
+            ignore_button_ticks = IGNORE_BUTTON_TICKS;
             break;
         case KEY_S:
-            if (print_labels == STATS_OFF) {
-                print_labels = STATS_ON;
-                gal_gotoxy(1, SCREEN_HEIGHT - 4);
-                gal_puts("X: ");
-                gal_gotoxy(1, SCREEN_HEIGHT - 3);
-                gal_puts("Y: ");
-                gal_gotoxy(1, SCREEN_HEIGHT - 2);
-                gal_puts("Z: ");
-                gal_gotoxy(1, SCREEN_HEIGHT - 1);
-                gal_puts("ITER: ");
-                ignore_button_ticks = 15;
-            } else {
-                print_labels = STATS_OFF;
-                gal_gotoxy(1, SCREEN_HEIGHT - 4);
-                gal_puts("         ");
-                gal_gotoxy(1, SCREEN_HEIGHT - 3);
-                gal_puts("         ");
-                gal_gotoxy(1, SCREEN_HEIGHT - 2);
-                gal_puts("         ");
-                gal_gotoxy(1, SCREEN_HEIGHT - 1);
-                gal_puts("*************");
-                ignore_button_ticks = 15;
-            }
+            toggle_stats();
+            ignore_button_ticks = IGNORE_BUTTON_TICKS;
             break;
         default:
             break;
         }
     }
 
+    // Decrease the button press cooldown
     if (ignore_button_ticks > 0)
     {
         ignore_button_ticks--;
     }
+
     iteration++;
     goto ITER;
 
