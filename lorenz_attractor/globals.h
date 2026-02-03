@@ -26,6 +26,7 @@
 #define KEY_ENTER 10
 #define KEY_LEFT 45
 #define KEY_RIGHT 46
+#define KEY_DEL 67
 
 #define PATH_LENGTH_SHIFT 8
 /* Length of the path history array.
@@ -46,6 +47,9 @@
 /* Multiplication of two fixed point numbers results in a double
    shifted value, so it needs to be shifted one step back */
 #define FIXED_MUL(a, b) (FROM_FIXED(((a) * (b))))
+
+/* Defines states of the program */
+enum program_execution_state { TITLE_SCREEN, HELP_SCREEN, SIMULATION, EXIT_PROGRAM };
 
 /* Marks the camera view angle of the system */
 enum view_axis { ASIS_XY, ASIS_XZ, ASIS_YZ };
@@ -72,6 +76,8 @@ extern int oldest_path_index;
 
 // Display utility variables
 
+/* Current program state */
+extern enum program_execution_state program_state;
 /* Stats visiblity flag */
 extern enum stats_visibility print_stats;
 /* Cooldown required between registering button presses */

@@ -247,6 +247,10 @@ void handle_user_input()
             toggle_stats();
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
+        case KEY_DEL:
+            gal_cls();
+            program_state = EXIT_PROGRAM;
+            break;
         default:
             break;
         }
@@ -387,11 +391,13 @@ SIM_ITER:
         gal_gotoxy(7, SCREEN_HEIGHT - 2);
         print_int_6((int)iteration);
     }
+    iteration++;
 
     handle_user_input();
-
-    iteration++;
-    goto SIM_ITER;
+    if (program_state != EXIT_PROGRAM)
+    {
+        goto SIM_ITER;
+    }
 
     return 0;
 }

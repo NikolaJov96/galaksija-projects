@@ -6,12 +6,6 @@
 #include "globals.h"
 #include "welcome_screen.h"
 
-/* Defines valid welcome screen states */
-enum welcome_screen_state { WELCOME_TITLE, WELCOME_HELP, WELCOME_EXIT };
-
-/* Current welcome screen state */
-enum welcome_screen_state welcome_state = WELCOME_TITLE;
-
 
 /* Clears the screen, except the border pixels */
 void clear_welcome_screen()
@@ -57,17 +51,19 @@ void draw_help_screen()
     gal_gotoxy(4, 5);
     gal_puts("COMMANDS:");
     gal_gotoxy(4, 6);
-    gal_puts("< - DECREASE DT");
+    gal_puts("<  - DECREASE DT");
     gal_gotoxy(4, 7);
-    gal_puts("> - INCREASE DT");
+    gal_puts(">  - INCREASE DT");
     gal_gotoxy(4, 8);
-    gal_puts("1 - XY VIEW");
+    gal_puts("1   - XY VIEW");
     gal_gotoxy(4, 9);
-    gal_puts("2 - XZ VIEW");
+    gal_puts("2   - XZ VIEW");
     gal_gotoxy(4, 10);
-    gal_puts("3 - YZ VIEW");
+    gal_puts("3   - YZ VIEW");
     gal_gotoxy(4, 11);
-    gal_puts("S - TOGGLE STATS");
+    gal_puts("S   - TOGGLE STATS");
+    gal_gotoxy(4, 12);
+    gal_puts("DEL - QUIT SIMULATION");
 
     gal_gotoxy(20, SCREEN_HEIGHT - 2);
     gal_puts("PRESS ENTER");
@@ -80,19 +76,19 @@ USER_INPUT:
     char_input = fgetc_cons();
     if (char_input == 'H')
     {
-        if (welcome_state == WELCOME_TITLE)
+        if (program_state == TITLE_SCREEN)
         {
-            welcome_state = WELCOME_HELP;
+            program_state = HELP_SCREEN;
         }
-        else if (welcome_state == WELCOME_HELP)
+        else if (program_state == HELP_SCREEN)
         {
-            welcome_state = WELCOME_TITLE;
+            program_state = TITLE_SCREEN;
         }
         return;
     }
     else if (char_input == KEY_ENTER)
     {
-        welcome_state = WELCOME_EXIT;
+        program_state = SIMULATION;
         return;
     }
     goto USER_INPUT;
@@ -100,14 +96,14 @@ USER_INPUT:
 
 void welcome_screen()
 {
-    while (welcome_state != WELCOME_EXIT)
+    while (program_state != SIMULATION)
     {
-        switch (welcome_state)
+        switch (program_state)
         {
-        case WELCOME_TITLE:
+        case TITLE_SCREEN:
             draw_title_screen();
             break;
-        case WELCOME_HELP:
+        case HELP_SCREEN:
             draw_help_screen();
             break;
         default:
