@@ -9,7 +9,7 @@ Learn about chaotic systems and Lorenz attractors on this [wiki](https://en.wiki
 Build using the following Z88DK command:
 
 ``` bash
-zcc +gal -create-app  -pragma-redirect:fputc_cons=fputc_cons_generic -o lorenz lorenz.c
+zcc +gal -create-app -pragma-redirect:fputc_cons=fputc_cons_generic -o lorenz lorenz.c galaksija.c globals.c welcome_screen.c
 ```
 
 ## TODO

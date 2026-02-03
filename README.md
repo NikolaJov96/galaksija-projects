@@ -33,8 +33,8 @@ Built `.gtp` files can be loaded into RAM using scripts provided [here](https://
 
 The following online emulators are completely compatible with the original hardware:
 
-- [Emulator 1](https://galaksija.epizy.com/Galaksija/jsgalmin_lite.html)
-- [Emulator 2](https://galaksija.net/)
+- [Emulator 1](https://galaksija.net/)
+- [Emulator 2](https://galaksija.epizy.com/Galaksija/jsgalmin_lite.html)
 
 ## Heritage programming peculiarities
 
