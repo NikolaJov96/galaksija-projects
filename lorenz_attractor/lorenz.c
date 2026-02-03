@@ -219,7 +219,7 @@ void handle_user_input()
             dt = dt < 5 ? dt + 1 : dt;
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
-        case KEY_1:
+        case '1':
             if (projection != ASIS_XY)
             {
                 projection = ASIS_XY;
@@ -227,7 +227,7 @@ void handle_user_input()
             }
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
-        case KEY_2:
+        case '2':
             if (projection != ASIS_XZ)
             {
                 projection = ASIS_XZ;
@@ -235,7 +235,7 @@ void handle_user_input()
             }
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
-        case KEY_3:
+        case '3':
             if (projection != ASIS_YZ)
             {
                 projection = ASIS_YZ;
@@ -243,7 +243,7 @@ void handle_user_input()
             }
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
-        case KEY_S:
+        case 'S':
             toggle_stats();
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;

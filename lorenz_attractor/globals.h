@@ -9,7 +9,6 @@
 // This is how Galaksija video memory is indexed.
 
 #define SCREEN_WIDTH 32
-#define SCREEN_WIDTH_HALF (SCREEN_WIDTH / 2)
 #define SCREEN_HEIGHT 16
 #define SCREEN_HEIGHT_HALF (SCREEN_HEIGHT / 2)
 
@@ -27,10 +26,6 @@
 #define KEY_ENTER 10
 #define KEY_LEFT 45
 #define KEY_RIGHT 46
-#define KEY_1 49
-#define KEY_2 50
-#define KEY_3 51
-#define KEY_S 83
 
 #define PATH_LENGTH_SHIFT 8
 /* Length of the path history array.
