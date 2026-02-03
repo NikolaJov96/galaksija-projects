@@ -140,19 +140,24 @@ void update_screen_char()
    because the arrays are yet to be initialized to -1. */
 void reinitialize_path_history(enum call_mode call_mode)
 {
-    int i;
+    int i, j;
 
     // First, reset visit counts to make sure the screen update
     // will work correctly in the next loop.
-    for (i = 0; i < PATH_LENGTH; i++)
+    for (i = 1; i < GRID_HEIGHT - 1; i++)
     {
-        visit_count[positions_y[i]][positions_x[i]] = 0;
+        for (j = 1; j < GRID_WIDTH - 1; j++)
+        {
+            visit_count[i][j] = 0;
+        }
     }
 
     // Reset the position arrays and update the screen
     for (i = 0; i < PATH_LENGTH; i++)
     {
-        if (call_mode == CALL_RUN && positions_x[i] != -1 && positions_y[i] != -1)
+        if (call_mode == CALL_RUN &&
+            positions_x[i] > 1 && positions_x[i] < GRID_WIDTH - 1 &&
+            positions_y[i] > 1 && positions_y[i] < GRID_HEIGHT - 1)
         {
             screen_x = positions_x[i] / 2;
             screen_y = positions_y[i] / 3;
@@ -265,6 +270,7 @@ int main()
 {
     gal_cls();
 
+    initialize_globals();
     reinitialize_path_history(CALL_INIT);
 
     welcome_screen();
@@ -312,7 +318,7 @@ SIM_ITER:
         while (abs(temp_grid_x - grid_x) > 1 || abs(temp_grid_y - grid_y) > 1)
         {
             while (temp_grid_x < 1 || temp_grid_x >= GRID_WIDTH - 1 ||
-                   temp_grid_y < 1 || temp_grid_y >= GRID_HEIGHT - 1)
+                temp_grid_y < 1 || temp_grid_y >= GRID_HEIGHT - 1)
             {
                 if (temp_grid_x < grid_x) temp_grid_x++;
                 else if (temp_grid_x > grid_x) temp_grid_x--;

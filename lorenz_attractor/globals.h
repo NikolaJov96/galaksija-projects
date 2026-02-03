@@ -131,4 +131,10 @@ extern char screen_x;
 /* Screen Y coordinate of the system */
 extern char screen_y;
 
+/* Initializes all global variables to their default states.
+   If the values were initialized in compile time, they would only be set when
+   the program is first loaded using the OLD command. Successive restarts of
+   the program would run with memory in the state left by the previous run. */
+void initialize_globals();
+
 #endif // DEFINITIONS_H
