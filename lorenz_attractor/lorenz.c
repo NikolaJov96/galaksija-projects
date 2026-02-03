@@ -23,6 +23,8 @@
 #define GRID_HEIGHT_HALF GRID_HEIGHT / 2
 
 #define KEY_ENTER 10
+#define KEY_LEFT 45
+#define KEY_RIGHT 46
 #define KEY_1 49
 #define KEY_2 50
 #define KEY_3 51
@@ -258,6 +260,8 @@ void toggle_stats()
 {
     if (print_stats == STATS_OFF) {
         print_stats = STATS_ON;
+        gal_gotoxy(1, SCREEN_HEIGHT - 6);
+        gal_puts("DT: ");
         gal_gotoxy(1, SCREEN_HEIGHT - 5);
         gal_puts("X: ");
         gal_gotoxy(1, SCREEN_HEIGHT - 4);
@@ -268,6 +272,8 @@ void toggle_stats()
         gal_puts("ITER: ");
     } else {
         print_stats = STATS_OFF;
+        gal_gotoxy(1, SCREEN_HEIGHT - 6);
+        gal_puts("         ");
         gal_gotoxy(1, SCREEN_HEIGHT - 5);
         gal_puts("         ");
         gal_gotoxy(1, SCREEN_HEIGHT - 4);
@@ -375,6 +381,14 @@ void handle_user_input()
         char_input = getk();
         switch (char_input)
         {
+        case KEY_LEFT:
+            dt = dt > 1 ? dt - 1 : dt;
+            ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
+            break;
+        case KEY_RIGHT:
+            dt = dt < 5 ? dt + 1 : dt;
+            ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
+            break;
         case KEY_1:
             if (projection != ASIS_XY)
             {
@@ -527,6 +541,9 @@ SIM_ITER:
     // Update stats display if enabled
     if (print_stats == STATS_ON)
     {
+        gal_gotoxy(5, SCREEN_HEIGHT - 6);
+        print_int_3((int)dt);
+
         gal_gotoxy(4, SCREEN_HEIGHT - 5);
         print_int_3(FROM_FIXED((int)x));
 
