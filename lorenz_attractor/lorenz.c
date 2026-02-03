@@ -50,7 +50,6 @@
 
 // TODO:
 // - Use different chars for path history fading
-// - Connect points on screen if there is a gap
 // - Separate screen for command help
 // - Command to change dt
 
@@ -123,6 +122,10 @@ int32_t dz;
 char grid_x;
 /* Grid Y coordinate of the system */
 char grid_y;
+/* Temporary grid X coordinate of the system */
+char temp_grid_x;
+/* Temporary grid Y coordinate of the system */
+char temp_grid_y;
 /* Screen X coordinate of the system */
 char screen_x;
 /* Screen Y coordinate of the system */
@@ -454,6 +457,49 @@ SIM_ITER:
         grid_y >= 1 && grid_y < GRID_HEIGHT - 1 &&
         (grid_x != positions_x[path_index] || grid_y != positions_y[path_index]))
     {
+        // If the old and the new positions are not neighbors, fill in the gap.
+        temp_grid_x = positions_x[path_index] == -1 ? grid_x - 1 : positions_x[path_index];
+        temp_grid_y = positions_y[path_index] == -1 ? grid_y - 1 : positions_y[path_index];
+        while (abs(temp_grid_x - grid_x) > 1 || abs(temp_grid_y - grid_y) > 1)
+        {
+            while (temp_grid_x < 1 || temp_grid_x >= GRID_WIDTH - 1 ||
+                   temp_grid_y < 1 || temp_grid_y >= GRID_HEIGHT - 1)
+            {
+                if (temp_grid_x < grid_x) temp_grid_x++;
+                else if (temp_grid_x > grid_x) temp_grid_x--;
+                if (temp_grid_y < grid_y) temp_grid_y++;
+                else if (temp_grid_y > grid_y) temp_grid_y--;
+            }
+
+            // Erase oldest point in path history
+            oldest_path_index = (path_index + 1) & (PATH_LENGTH - 1);
+            if (positions_x[oldest_path_index] != -1 && positions_y[oldest_path_index] != -1)
+            {
+                visit_count[positions_y[oldest_path_index]][positions_x[oldest_path_index]]--;
+                screen_x = positions_x[oldest_path_index] / 2;
+                screen_y = positions_y[oldest_path_index] / 3;
+                update_screen_char();
+            }
+
+            if (temp_grid_x < grid_x) temp_grid_x++;
+            else if (temp_grid_x > grid_x) temp_grid_x--;
+            if (temp_grid_y < grid_y) temp_grid_y++;
+            else if (temp_grid_y > grid_y) temp_grid_y--;
+
+            // Move to the next position in the path history
+            path_index = oldest_path_index;
+
+            // Store new position in history
+            positions_x[path_index] = temp_grid_x;
+            positions_y[path_index] = temp_grid_y;
+            visit_count[temp_grid_y][temp_grid_x]++;
+
+            // Update the screen character at new position
+            screen_x = temp_grid_x / 2;
+            screen_y = temp_grid_y / 3;
+            update_screen_char();
+        }
+
         // Erase oldest point in path history
         oldest_path_index = (path_index + 1) & (PATH_LENGTH - 1);
         if (positions_x[oldest_path_index] != -1 && positions_y[oldest_path_index] != -1)
