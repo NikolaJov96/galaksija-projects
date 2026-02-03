@@ -53,7 +53,6 @@
 // TODO:
 // - Use different chars for path history fading
 // - Separate screen for command help
-// - Command to change dt
 
 /* Marks the camera view angle of the system */
 enum view_axis { ASIS_XY, ASIS_XZ, ASIS_YZ };
@@ -104,11 +103,11 @@ int32_t dt = TO_FIXED(0.01);
 // System state variables
 
 /* The X coordinate of the system */
-int32_t x = TO_FIXED(1.0);
+int32_t x = TO_FIXED(10.0);
 /* The Y coordinate of the system */
-int32_t y = TO_FIXED(1.0);
+int32_t y = TO_FIXED(10.0);
 /* The Z coordinate of the system */
-int32_t z = TO_FIXED(1.0);
+int32_t z = TO_FIXED(10.0);
 /* Current camera projection */
 enum view_axis projection = ASIS_XZ;
 
