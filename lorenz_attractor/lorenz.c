@@ -244,6 +244,9 @@ void handle_user_input()
             }
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
+        case 'R':
+            program_state = RESTART;
+            break;
         case 'S':
             toggle_stats();
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
@@ -266,7 +269,7 @@ int main()
 {
     gal_cls();
 
-    initialize_globals();
+    initialize_globals(CALL_INIT);
     reinitialize_path_history(CALL_INIT);
 
     welcome_screen();
@@ -396,6 +399,15 @@ SIM_ITER:
     iteration++;
 
     handle_user_input();
+
+    // Restart the simulation, but skip the welcome screen
+    if (program_state == RESTART)
+    {
+        initialize_globals(CALL_RUN);
+        reinitialize_path_history(CALL_RUN);
+        program_state = SIMULATION;
+    }
+
     if (program_state != EXIT_PROGRAM)
     {
         goto SIM_ITER;

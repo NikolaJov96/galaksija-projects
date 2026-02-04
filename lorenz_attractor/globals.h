@@ -49,7 +49,7 @@
 #define FIXED_MUL(a, b) (FROM_FIXED(((a) * (b))))
 
 /* Defines states of the program */
-enum program_execution_state { TITLE_SCREEN, HELP_SCREEN, SIMULATION, EXIT_PROGRAM };
+enum program_execution_state { TITLE_SCREEN, HELP_SCREEN, SIMULATION, RESTART, EXIT_PROGRAM };
 
 /* Marks the camera view angle of the system */
 enum view_axis { ASIS_XY, ASIS_XZ, ASIS_YZ };
@@ -135,6 +135,6 @@ extern char screen_y;
    If the values were initialized in compile time, they would only be set when
    the program is first loaded using the OLD command. Successive restarts of
    the program would run with memory in the state left by the previous run. */
-void initialize_globals();
+void initialize_globals(enum call_mode call_mode);
 
 #endif // DEFINITIONS_H

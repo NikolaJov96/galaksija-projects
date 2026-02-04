@@ -2,6 +2,10 @@
 
 #include "globals.h"
 
+#include <stdlib.h>
+
+#include "galaksija.h"
+
 char positions_x[PATH_LENGTH];
 char positions_y[PATH_LENGTH];
 unsigned char visit_count[GRID_HEIGHT][GRID_WIDTH];
@@ -20,24 +24,30 @@ enum view_axis projection;
 int64_t dx, dy, dz;
 char grid_x, grid_y, temp_grid_x, temp_grid_y, screen_x, screen_y;
 
-void initialize_globals()
+void initialize_globals(enum call_mode call_mode)
 {
+    // Skip the following initializations if called from a restart
+    if (call_mode == CALL_INIT)
+    {
+        srand(z80_wpeek(RND_ADDR));
+
+        ro = TO_FIXED(28.0);
+        sigma = TO_FIXED(10.0);
+        beta = TO_FIXED(8.0 / 3.0);
+        dt = TO_FIXED(0.01);
+
+        program_state = TITLE_SCREEN;
+        print_stats = STATS_OFF;
+        projection = ASIS_XZ;
+
+        ignore_button_cooldown = 0;
+    }
+
     path_index = 0;
     oldest_path_index = 0;
-
-    program_state = TITLE_SCREEN;
-    print_stats = STATS_OFF;
-    ignore_button_cooldown = 0;
     iteration = 1;
 
-    ro = TO_FIXED(28.0);
-    sigma = TO_FIXED(10.0);
-    beta = TO_FIXED(8.0 / 3.0);
-    dt = TO_FIXED(0.01);
-
-    x = TO_FIXED(10.0);
-    y = TO_FIXED(10.0);
-    z = TO_FIXED(10.0);
-
-    projection = ASIS_XZ;
+    x = TO_FIXED(rand() / (RAND_MAX / 40) - 20);
+    y = TO_FIXED(rand() / (RAND_MAX / 40) - 20);
+    z = TO_FIXED(rand() / (RAND_MAX / 40) + 5);
 }

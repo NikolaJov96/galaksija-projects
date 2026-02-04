@@ -43,25 +43,25 @@ void draw_help_screen()
 {
     // Description
     gal_gotoxy(4, 2);
-    gal_puts("WELCOME TO THE LORENZ");
-    gal_gotoxy(4, 3);
-    gal_puts("ATTRACTOR SIMULATION!");
+    gal_puts("WELCOME!");
 
     // Commands
-    gal_gotoxy(4, 5);
+    gal_gotoxy(4, 4);
     gal_puts("COMMANDS:");
-    gal_gotoxy(6, 6);
+    gal_gotoxy(6, 5);
     gal_puts("< - DECREASE DT");
-    gal_gotoxy(6, 7);
+    gal_gotoxy(6, 6);
     gal_puts("> - INCREASE DT");
-    gal_gotoxy(6, 8);
+    gal_gotoxy(6, 7);
     gal_puts("1 - XY VIEW");
-    gal_gotoxy(6, 9);
+    gal_gotoxy(6, 8);
     gal_puts("2 - XZ VIEW");
-    gal_gotoxy(6, 10);
+    gal_gotoxy(6, 9);
     gal_puts("3 - YZ VIEW");
-    gal_gotoxy(6, 11);
+    gal_gotoxy(6, 10);
     gal_puts("S - TOGGLE STATS");
+    gal_gotoxy(6, 11);
+    gal_puts("R - RESTART SIMULATION");
     gal_gotoxy(4, 12);
     gal_puts("DEL - QUIT SIMULATION");
 
