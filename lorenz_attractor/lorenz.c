@@ -406,6 +406,10 @@ SIM_ITER:
         initialize_globals(CALL_RUN);
         reinitialize_path_history(CALL_RUN);
         program_state = SIMULATION;
+
+        // Clear the iteration count to avoid artifacts in stats display
+        gal_gotoxy(7, SCREEN_HEIGHT - 2);
+        gal_puts("      ");
     }
 
     if (program_state != EXIT_PROGRAM)
