@@ -41,8 +41,8 @@
 /* Number of simulated decimal places.
    This number should be as large as possible,
    but such that it never causes overflow */
-#define FP_SHIFT 8
-#define TO_FIXED(x) ((int32_t)((x) * (1l << FP_SHIFT)))
+#define FP_SHIFT 10
+#define TO_FIXED(x) ((int64_t)((x) * (1l << FP_SHIFT)))
 #define FROM_FIXED(x) ((x) >> FP_SHIFT)
 /* Multiplication of two fixed point numbers results in a double
    shifted value, so it needs to be shifted one step back */
@@ -85,39 +85,39 @@ extern unsigned char ignore_button_cooldown;
 /* Latest pressed button character */
 extern unsigned char char_input;
 /* Simulation iteration counter */
-extern uint32_t iteration;
+extern int iteration;
 
 // Lorenz attractor parameters
 // Parameters are hardcoded to values that produce the desired chaotic behavior
 
 /* The first of the Lorenz attractor parameters */
-extern int32_t ro;
+extern int64_t ro;
 /* The second of the Lorenz attractor parameters */
-extern int32_t sigma;
+extern int64_t sigma;
 /* The third of the Lorenz attractor parameters */
-extern int32_t beta;
+extern int64_t beta;
 /* Simulation time step */
-extern int32_t dt;
+extern int64_t dt;
 
 // System state variables
 
 /* The X coordinate of the system */
-extern int32_t x;
+extern int64_t x;
 /* The Y coordinate of the system */
-extern int32_t y;
+extern int64_t y;
 /* The Z coordinate of the system */
-extern int32_t z;
+extern int64_t z;
 /* Current camera projection */
 extern enum view_axis projection;
 
 // Simulation helper variables
 
 /* Change in X coordinate in the current step */
-extern int32_t dx;
+extern int64_t dx;
 /* Change in Y coordinate in the current step */
-extern int32_t dy;
+extern int64_t dy;
 /* Change in Z coordinate in the current step */
-extern int32_t dz;
+extern int64_t dz;
 /* Grid X coordinate of the system */
 extern char grid_x;
 /* Grid Y coordinate of the system */

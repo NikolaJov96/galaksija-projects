@@ -12,12 +12,12 @@ enum program_execution_state program_state;
 enum stats_visibility print_stats;
 unsigned char ignore_button_cooldown;
 unsigned char char_input;
-uint32_t iteration;
+int iteration;
 
-int32_t ro, sigma, beta, dt;
-int32_t x, y, z;
+int64_t ro, sigma, beta, dt;
+int64_t x, y, z;
 enum view_axis projection;
-int32_t dx, dy, dz;
+int64_t dx, dy, dz;
 char grid_x, grid_y, temp_grid_x, temp_grid_y, screen_x, screen_y;
 
 void initialize_globals()

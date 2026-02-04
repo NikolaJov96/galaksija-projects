@@ -44,15 +44,14 @@ void print_int_3(int value)
     }
 }
 
-/* Prints a positive long int value to screen with max 6 digits,
+/* Prints a positive int value to screen with max 4 digits,
   location should already be set. */
-void print_int_6(int32_t value)
+void print_positive_int(int value)
 {
-    int32_t max_value = 999999;
+    int max_value = 9999;
     int digit = 0;
-    int i = 0;
 
-    if (value > max_value)
+    if (value < 0 || value > max_value)
     {
         value = max_value;
     }
@@ -69,20 +68,17 @@ void print_int_6(int32_t value)
         {
             digit = value / max_value;
             gal_putc('0' + digit);
-            i++;
             value -= digit * max_value;
         }
         else
         {
             gal_putc('0');
-            i++;
         }
         max_value /= 10;
     }
 
     // Value is now a single digit
     gal_putc('0' + (char)value);
-    i++;
 }
 
 /* Handles initialization and cleaning of stats display */
@@ -217,11 +213,11 @@ void handle_user_input()
         switch (char_input)
         {
         case KEY_LEFT:
-            dt = dt > 1 ? dt - 1 : dt;
+            dt = dt > 2 ? dt - 2 : dt;
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
         case KEY_RIGHT:
-            dt = dt < 5 ? dt + 1 : dt;
+            dt = dt < 20 ? dt + 2 : dt;
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
         case '1':
@@ -395,7 +391,7 @@ SIM_ITER:
         print_int_3(FROM_FIXED((int)z));
 
         gal_gotoxy(7, SCREEN_HEIGHT - 2);
-        print_int_6((int)iteration);
+        print_positive_int(iteration);
     }
     iteration++;
 
