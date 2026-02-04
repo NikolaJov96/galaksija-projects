@@ -1,4 +1,4 @@
-# Projects for Galaksija computer
+# Projects for the Galaksija computer
 
 This repo contains projects for the Galaksija computer.
 
@@ -9,6 +9,7 @@ In 2025, the creators of the original computer released an updated specification
 Resources:
 - [Wikipedia](https://en.wikipedia.org/wiki/Galaksija_(computer))
 - [The new specification](https://racunari.com/galaksija/)
+- Ivana Iličev [GitHub](https://github.com/ivang78) with some cool programs in C
 
 ## Building the projects
 
