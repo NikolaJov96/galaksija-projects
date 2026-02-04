@@ -41,12 +41,21 @@
 /* Number of simulated decimal places.
    This number should be as large as possible,
    but such that it never causes overflow */
-#define FP_SHIFT 10
-#define TO_FIXED(x) ((int64_t)((x) * (1l << FP_SHIFT)))
+#define FP_SHIFT 8
+#define TO_FIXED(x) ((int32_t)((x) * (1l << FP_SHIFT)))
 #define FROM_FIXED(x) ((x) >> FP_SHIFT)
 /* Multiplication of two fixed point numbers results in a double
    shifted value, so it needs to be shifted one step back */
 #define FIXED_MUL(a, b) (FROM_FIXED(((a) * (b))))
+
+// Lorenz attractor parameters, set to values that produce the desired chaotic behavior
+
+/* The first of the Lorenz attractor parameters */
+#define RO TO_FIXED(28)
+/* The second of the Lorenz attractor parameters */
+#define SIGMA TO_FIXED(10)
+/* The third of the Lorenz attractor parameters */
+#define BETA (TO_FIXED(8) / 3)
 
 /* Defines states of the program */
 enum program_execution_state { TITLE_SCREEN, HELP_SCREEN, SIMULATION, RESTART, EXIT_PROGRAM };
@@ -60,64 +69,25 @@ enum stats_visibility { STATS_OFF, STATS_ON };
 /* At which stage of the program execution is function called */
 enum call_mode { CALL_INIT, CALL_RUN };
 
-// Path history tracking variables
-
-/* History of the last PATH_LENGTH X screen coordinates */
-extern char positions_x[PATH_LENGTH];
-/* History of the last PATH_LENGTH Y screen coordinates */
-extern char positions_y[PATH_LENGTH];
-/* Simulation can pass multiple times through a same pixel,
-   so we keep track of how many times each pixel was visited */
-extern unsigned char visit_count[GRID_HEIGHT][GRID_WIDTH];
-/* Index of the current position in revolving path history arrays */
-extern int path_index;
-/* Helper variable containing the index of the oldest position in path history */
-extern int oldest_path_index;
-
-// Display utility variables
-
-/* Current program state */
-extern enum program_execution_state program_state;
-/* Stats visiblity flag */
-extern enum stats_visibility print_stats;
-/* Cooldown required between registering button presses */
-extern unsigned char ignore_button_cooldown;
-/* Latest pressed button character */
-extern unsigned char char_input;
-/* Simulation iteration counter */
-extern int iteration;
-
-// Lorenz attractor parameters
-// Parameters are hardcoded to values that produce the desired chaotic behavior
-
-/* The first of the Lorenz attractor parameters */
-extern int64_t ro;
-/* The second of the Lorenz attractor parameters */
-extern int64_t sigma;
-/* The third of the Lorenz attractor parameters */
-extern int64_t beta;
-/* Simulation time step */
-extern int64_t dt;
-
 // System state variables
 
 /* The X coordinate of the system */
-extern int64_t x;
+extern int32_t x;
 /* The Y coordinate of the system */
-extern int64_t y;
+extern int32_t y;
 /* The Z coordinate of the system */
-extern int64_t z;
-/* Current camera projection */
-extern enum view_axis projection;
+extern int32_t z;
 
 // Simulation helper variables
 
+/* Simulation time step */
+extern int32_t dt;
 /* Change in X coordinate in the current step */
-extern int64_t dx;
+extern int32_t dx;
 /* Change in Y coordinate in the current step */
-extern int64_t dy;
+extern int32_t dy;
 /* Change in Z coordinate in the current step */
-extern int64_t dz;
+extern int32_t dz;
 /* Grid X coordinate of the system */
 extern char grid_x;
 /* Grid Y coordinate of the system */
@@ -130,6 +100,35 @@ extern char temp_grid_y;
 extern char screen_x;
 /* Screen Y coordinate of the system */
 extern char screen_y;
+
+// Display utility variables
+
+/* Current program state */
+extern enum program_execution_state program_state;
+/* Current camera projection */
+extern enum view_axis projection;
+/* Stats visiblity flag */
+extern enum stats_visibility print_stats;
+/* Cooldown required between registering button presses */
+extern unsigned char ignore_button_cooldown;
+/* Latest pressed button character */
+extern unsigned char char_input;
+/* Simulation iteration counter */
+extern int iteration;
+
+// Path history tracking variables
+
+/* Index of the current position in revolving path history arrays */
+extern int path_index;
+/* Helper variable containing the index of the oldest position in path history */
+extern int oldest_path_index;
+/* History of the last PATH_LENGTH X screen coordinates */
+extern char positions_x[PATH_LENGTH];
+/* History of the last PATH_LENGTH Y screen coordinates */
+extern char positions_y[PATH_LENGTH];
+/* Simulation can pass multiple times through a same pixel,
+   so we keep track of how many times each pixel was visited */
+extern unsigned char visit_count[GRID_HEIGHT][GRID_WIDTH];
 
 /* Initializes all global variables to their default states.
    If the values were initialized in compile time, they would only be set when

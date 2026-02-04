@@ -213,11 +213,11 @@ void handle_user_input()
         switch (char_input)
         {
         case KEY_LEFT:
-            dt = dt > 2 ? dt - 2 : dt;
+            dt = dt > 1 ? dt - 1 : dt;
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
         case KEY_RIGHT:
-            dt = dt < 20 ? dt + 2 : dt;
+            dt++;
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
         case '1':
@@ -276,9 +276,9 @@ int main()
 
 SIM_ITER:
     // Compute derivatives
-    dx = FIXED_MUL(sigma, (y - x));
-    dy = FIXED_MUL(x, (ro - z)) - y;
-    dz = FIXED_MUL(x, y) - FIXED_MUL(beta, z);
+    dx = FIXED_MUL(SIGMA, (y - x));
+    dy = FIXED_MUL(x, (RO - z)) - y;
+    dz = FIXED_MUL(x, y) - FIXED_MUL(BETA, z);
 
     // Update state
     x += FIXED_MUL(dx, dt);
@@ -289,19 +289,28 @@ SIM_ITER:
     // NOTE: It's incredible that the Lorenz attractor range of values for
     // all three variables fits perfectly within the Galaksija screen bounds.
     // There is no need for even a slight scale adjustment.
+    // NOTE: The compiler incorrectly handles the assignment of a 32-bit expression
+    // to a char variable, so a helper variable is used to store the value before
+    // assigning it to the grid coordinate variables.
     switch (projection)
     {
         case ASIS_XY:
-            grid_x = GRID_WIDTH_HALF + FROM_FIXED(x);
-            grid_y = GRID_HEIGHT_HALF - FROM_FIXED(y);
+            dx = GRID_WIDTH_HALF + FROM_FIXED(x);
+            grid_x = (char)dx;
+            dy = GRID_HEIGHT_HALF - FROM_FIXED(y);
+            grid_y = (char)dy;
             break;
         case ASIS_XZ:
-            grid_x = GRID_WIDTH_HALF + FROM_FIXED(x);
-            grid_y = GRID_HEIGHT_HALF - (FROM_FIXED(z) - 25);
+            dx = GRID_WIDTH_HALF + FROM_FIXED(x);
+            grid_x = (char)dx;
+            dy = GRID_HEIGHT_HALF - (FROM_FIXED(z) - 25);
+            grid_y = (char)dy;
             break;
         case ASIS_YZ:
-            grid_x = GRID_WIDTH_HALF + FROM_FIXED(y);
-            grid_y = GRID_HEIGHT_HALF - (FROM_FIXED(z) - 25);
+            dy = GRID_WIDTH_HALF + FROM_FIXED(y);
+            grid_x = (char)dy;
+            dy = GRID_HEIGHT_HALF - (FROM_FIXED(z) - 25);
+            grid_y = (char)dy;
             break;
     }
 
