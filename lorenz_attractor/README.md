@@ -15,6 +15,5 @@ zcc +gal -create-app -pragma-redirect:fputc_cons=fputc_cons_generic -o lorenz lo
 ## TODO
 
 - Use different chars for path history fading
-- All variables should be initialized on run, not hardcoded in global variables
 - Examine the effect on performance of using macros instead of functions
 - Random initialization
