@@ -19,6 +19,11 @@ void print_int_3(int value)
         i++;
         value = -value;
     }
+    else
+    {
+        gal_putc(' ');
+        i++;
+    }
 
     if (value > max_value)
     {
@@ -87,13 +92,13 @@ void toggle_stats()
     if (print_stats == STATS_OFF) {
         print_stats = STATS_ON;
         gal_gotoxy(1, SCREEN_HEIGHT - 6);
-        gal_puts("DT: ");
-        gal_gotoxy(1, SCREEN_HEIGHT - 5);
         gal_puts("X: ");
-        gal_gotoxy(1, SCREEN_HEIGHT - 4);
+        gal_gotoxy(1, SCREEN_HEIGHT - 5);
         gal_puts("Y: ");
-        gal_gotoxy(1, SCREEN_HEIGHT - 3);
+        gal_gotoxy(1, SCREEN_HEIGHT - 4);
         gal_puts("Z: ");
+        gal_gotoxy(1, SCREEN_HEIGHT - 3);
+        gal_puts("DT: ");
         gal_gotoxy(1, SCREEN_HEIGHT - 2);
         gal_puts("ITER: ");
     } else {
@@ -390,17 +395,16 @@ SIM_ITER:
     // Update stats display if enabled
     if (print_stats == STATS_ON)
     {
-        gal_gotoxy(5, SCREEN_HEIGHT - 6);
-        print_int_3((int)dt);
+        gal_gotoxy(3, SCREEN_HEIGHT - 6);
+        print_int_3((int)FROM_FIXED(x));
 
-        gal_gotoxy(4, SCREEN_HEIGHT - 5);
-        print_int_3(FROM_FIXED((int)x));
-
-        gal_gotoxy(4, SCREEN_HEIGHT - 4);
-        print_int_3(FROM_FIXED((int)y));
+        gal_gotoxy(3, SCREEN_HEIGHT - 5);
+        print_int_3((int)FROM_FIXED(y));
+        gal_gotoxy(3, SCREEN_HEIGHT - 4);
+        print_int_3((int)FROM_FIXED(z));
 
         gal_gotoxy(4, SCREEN_HEIGHT - 3);
-        print_int_3(FROM_FIXED((int)z));
+        print_int_3((int)dt);
 
         gal_gotoxy(7, SCREEN_HEIGHT - 2);
         print_positive_int(iteration);

@@ -16,3 +16,4 @@ zcc +gal -create-app -pragma-redirect:fputc_cons=fputc_cons_generic -o lorenz lo
 
 - Use different chars for path history fading
 - Examine the effect on performance of using macros instead of functions
+- Combine number printing functions into a clean and performant printing function
