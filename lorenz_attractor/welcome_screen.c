@@ -20,22 +20,23 @@ void clear_welcome_screen()
 /* Draws the title screen */
 void draw_title_screen()
 {
-    gal_gotoxy(6, SCREEN_HEIGHT_HALF - 4);
-    gal_puts("********************");
     gal_gotoxy(6, SCREEN_HEIGHT_HALF - 3);
-    gal_puts("* LORENZ ATTRACTOR *");
+    gal_puts("********************");
     gal_gotoxy(6, SCREEN_HEIGHT_HALF - 2);
+    gal_puts("* LORENZ ATTRACTOR *");
+    gal_gotoxy(6, SCREEN_HEIGHT_HALF - 1);
     gal_puts("********************");
 
-    gal_gotoxy(6, SCREEN_HEIGHT_HALF);
-    gal_puts("BY NIKOLA JOVANOVI");
+    gal_gotoxy(8, SCREEN_HEIGHT_HALF + 1);
+    gal_puts("NIKOLA JOVANOVI");
     gal_putc(92);
+    gal_gotoxy(14, SCREEN_HEIGHT_HALF + 2);
+    gal_puts("2026");
 
-    gal_gotoxy(6, SCREEN_HEIGHT_HALF + 3);
-    gal_puts("H - HELP SCREEN");
-
-    gal_gotoxy(20, SCREEN_HEIGHT - 2);
-    gal_puts("PRESS ENTER");
+    gal_gotoxy(2, SCREEN_HEIGHT - 2);
+    gal_puts("HELP - H");
+    gal_gotoxy(17, SCREEN_HEIGHT - 2);
+    gal_puts("START - ENTER");
 }
 
 /* Draws the help screen */
@@ -65,8 +66,10 @@ void draw_help_screen()
     gal_gotoxy(4, 12);
     gal_puts("DEL - QUIT SIMULATION");
 
-    gal_gotoxy(20, SCREEN_HEIGHT - 2);
-    gal_puts("PRESS ENTER");
+    gal_gotoxy(2, SCREEN_HEIGHT - 2);
+    gal_puts("HELP - H");
+    gal_gotoxy(17, SCREEN_HEIGHT - 2);
+    gal_puts("START - ENTER");
 }
 
 /* Waits for user input to update the welcome screen state */
