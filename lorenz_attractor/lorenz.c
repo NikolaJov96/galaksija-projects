@@ -6,57 +6,26 @@
 #include "globals.h"
 #include "welcome_screen.h"
 
-/* Prints an int value to the screen, location should already be set.
-  Adds minus if negative, adds spaces if less than 3 digits. */
-void print_int_3(int value)
+/* Prints an int value to screen with max 4 digits,
+  location should already be set using gal_gotoxy. */
+void print_int(int value)
 {
-    int max_value = 99;
+    int max_value = 9999;
     int digit = 0;
-    int i = 0;
+    int digit_count = 0;
 
     if (value < 0) {
         gal_putc('-');
-        i++;
+        digit_count++;
         value = -value;
     }
     else
     {
         gal_putc(' ');
-        i++;
+        digit_count++;
     }
 
     if (value > max_value)
-    {
-        value = max_value;
-    }
-
-    if (value >= 10)
-    {
-        digit = value / 10;
-        gal_putc('0' + digit);
-        i++;
-        value -= digit * 10;
-    }
-
-    // Value is now a single digit
-    gal_putc('0' + value);
-    i++;
-
-    // Pad with spaces if needed
-    while (i < 3) {
-        gal_putc(' ');
-        i++;
-    }
-}
-
-/* Prints a positive int value to screen with max 4 digits,
-  location should already be set. */
-void print_positive_int(int value)
-{
-    int max_value = 9999;
-    int digit = 0;
-
-    if (value < 0 || value > max_value)
     {
         value = max_value;
     }
@@ -79,11 +48,18 @@ void print_positive_int(int value)
         {
             gal_putc('0');
         }
+        digit_count++;
         max_value /= 10;
     }
 
     // Value is now a single digit
     gal_putc('0' + (char)value);
+
+    // Pad with spaces if needed
+    while (digit_count < 3) {
+        gal_putc(' ');
+        digit_count++;
+    }
 }
 
 /* Handles initialization and cleaning of stats display */
@@ -104,13 +80,13 @@ void toggle_stats()
     } else {
         print_stats = STATS_OFF;
         gal_gotoxy(1, SCREEN_HEIGHT - 6);
-        gal_puts("         ");
+        gal_puts("       ");
         gal_gotoxy(1, SCREEN_HEIGHT - 5);
-        gal_puts("         ");
+        gal_puts("       ");
         gal_gotoxy(1, SCREEN_HEIGHT - 4);
-        gal_puts("         ");
+        gal_puts("       ");
         gal_gotoxy(1, SCREEN_HEIGHT - 3);
-        gal_puts("         ");
+        gal_puts("        ");
         gal_gotoxy(1, SCREEN_HEIGHT - 2);
         gal_puts("            ");
     }
@@ -396,18 +372,18 @@ SIM_ITER:
     if (print_stats == STATS_ON)
     {
         gal_gotoxy(3, SCREEN_HEIGHT - 6);
-        print_int_3((int)FROM_FIXED(x));
+        print_int((int)FROM_FIXED(x));
 
         gal_gotoxy(3, SCREEN_HEIGHT - 5);
-        print_int_3((int)FROM_FIXED(y));
+        print_int((int)FROM_FIXED(y));
         gal_gotoxy(3, SCREEN_HEIGHT - 4);
-        print_int_3((int)FROM_FIXED(z));
+        print_int((int)FROM_FIXED(z));
 
         gal_gotoxy(4, SCREEN_HEIGHT - 3);
-        print_int_3((int)dt);
+        print_int((int)dt);
 
-        gal_gotoxy(7, SCREEN_HEIGHT - 2);
-        print_positive_int(iteration);
+        gal_gotoxy(6, SCREEN_HEIGHT - 2);
+        print_int(iteration);
     }
     iteration++;
 
@@ -421,7 +397,7 @@ SIM_ITER:
         program_state = SIMULATION;
 
         // Clear the iteration count to avoid artifacts in stats display
-        gal_gotoxy(7, SCREEN_HEIGHT - 2);
+        gal_gotoxy(6, SCREEN_HEIGHT - 2);
         gal_puts("      ");
     }
 
