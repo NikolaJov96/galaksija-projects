@@ -26,7 +26,10 @@ void print_int(int value)
     itoa(value, print_buffer, 10);
     gal_puts(print_buffer);
 
-    gal_putc(' ');
+    if (value < 10)
+    {
+        gal_putc(' ');
+    }
 }
 
 /* Handles initialization and cleaning of stats display */
