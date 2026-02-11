@@ -41,7 +41,8 @@ void toggle_stats()
         gal_gotoxy(1, SCREEN_HEIGHT - 4);
         gal_puts("Z: ");
         gal_gotoxy(1, SCREEN_HEIGHT - 3);
-        gal_puts("DT: ");
+        gal_puts("DT:");
+        print_int((int)dt);
         gal_gotoxy(1, SCREEN_HEIGHT - 2);
         gal_puts("ITER: ");
     } else {
@@ -162,10 +163,20 @@ void handle_user_input()
         {
         case KEY_LEFT:
             dt = dt > 1 ? dt - 1 : dt;
+            if (print_stats == STATS_ON)
+            {
+                gal_gotoxy(4, SCREEN_HEIGHT - 3);
+                print_int((int)dt);
+            }
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
         case KEY_RIGHT:
             dt++;
+            if (print_stats == STATS_ON)
+            {
+                gal_gotoxy(4, SCREEN_HEIGHT - 3);
+                print_int((int)dt);
+            }
             ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
             break;
         case '1':
@@ -346,9 +357,6 @@ SIM_ITER:
 
         gal_gotoxy(3, SCREEN_HEIGHT - 4);
         print_int((int)FROM_FIXED(z));
-
-        gal_gotoxy(4, SCREEN_HEIGHT - 3);
-        print_int((int)dt);
 
         gal_gotoxy(6, SCREEN_HEIGHT - 2);
         print_int(iteration);
