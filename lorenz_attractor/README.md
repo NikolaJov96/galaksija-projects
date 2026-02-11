@@ -6,8 +6,18 @@ Learn about chaotic systems and Lorenz attractors on this [wiki](https://en.wiki
 
 ## Build
 
-Build using the following Z88DK command:
+Ensure the Z88DK is properly installed.
 
-``` bash
-zcc +gal -create-app -pragma-redirect:fputc_cons=fputc_cons_generic -o lorenz lorenz.c galaksija.c globals.c welcome_screen.c
+On Windows, run:
+
+```console
+.\build_lorenz.bat
 ```
+
+On Linux, run:
+
+```bash
+make
+```
+
+Generated binary, tape, and audio files are already included in this repository inside the `build` folder.
