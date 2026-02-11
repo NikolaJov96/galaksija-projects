@@ -6,60 +6,27 @@
 #include "globals.h"
 #include "welcome_screen.h"
 
-/* Prints an int value to screen with max 4 digits,
-  location should already be set using gal_gotoxy. */
+/* Prints an integer value to the screen using itoa,
+   puts a minus sign if the value is negative,
+   adds a trailing space to clear previous characters */
 void print_int(int value)
 {
-    int max_value = 9999;
-    int digit = 0;
-    int digit_count = 0;
+    static char print_buffer[10];
 
-    if (value < 0) {
+    if (value < 0)
+    {
         gal_putc('-');
-        digit_count++;
         value = -value;
     }
     else
     {
         gal_putc(' ');
-        digit_count++;
     }
 
-    if (value > max_value)
-    {
-        value = max_value;
-    }
-    max_value++;
+    itoa(value, print_buffer, 10);
+    gal_puts(print_buffer);
 
-    while (max_value > value)
-    {
-        max_value /= 10;
-    }
-
-    while (max_value >= 10)
-    {
-        if (value >= max_value)
-        {
-            digit = value / max_value;
-            gal_putc('0' + digit);
-            value -= digit * max_value;
-        }
-        else
-        {
-            gal_putc('0');
-        }
-        digit_count++;
-        max_value /= 10;
-    }
-
-    // Value is now a single digit
-    gal_putc('0' + (char)value);
-
-    // Pad with spaces if needed
-    while (digit_count < 3) {
-        gal_putc(' ');
-        digit_count++;
-    }
+    gal_putc(' ');
 }
 
 /* Handles initialization and cleaning of stats display */
@@ -376,6 +343,7 @@ SIM_ITER:
 
         gal_gotoxy(3, SCREEN_HEIGHT - 5);
         print_int((int)FROM_FIXED(y));
+
         gal_gotoxy(3, SCREEN_HEIGHT - 4);
         print_int((int)FROM_FIXED(z));
 
