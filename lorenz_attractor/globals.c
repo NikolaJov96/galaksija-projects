@@ -13,8 +13,7 @@ char grid_x, grid_y, temp_grid_x, temp_grid_y, screen_x, screen_y;
 enum program_execution_state program_state;
 enum view_axis projection;
 enum stats_visibility print_stats;
-unsigned char ignore_button_cooldown;
-unsigned char char_input;
+unsigned char previous_button;
 int iteration;
 
 int path_index;
@@ -35,9 +34,9 @@ void initialize_globals(enum call_mode call_mode)
         program_state = TITLE_SCREEN;
         projection = ASIS_XZ;
         print_stats = STATS_OFF;
-        ignore_button_cooldown = 0;
     }
 
+    previous_button = 0;
     iteration = 1;
     path_index = 0;
     oldest_path_index = 0;

@@ -76,9 +76,9 @@ void draw_help_screen()
 void handle_menu_user_input()
 {
 USER_INPUT:
-    char_input = fgetc_cons();
-    if (char_input == 'H')
+    switch (fgetc_cons())
     {
+    case 'H':
         if (program_state == TITLE_SCREEN)
         {
             program_state = HELP_SCREEN;
@@ -88,9 +88,7 @@ USER_INPUT:
             program_state = TITLE_SCREEN;
         }
         return;
-    }
-    else if (char_input == KEY_ENTER)
-    {
+    case KEY_ENTER:
         program_state = SIMULATION;
         return;
     }

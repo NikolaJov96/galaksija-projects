@@ -11,8 +11,3 @@ Build using the following Z88DK command:
 ``` bash
 zcc +gal -create-app -pragma-redirect:fputc_cons=fputc_cons_generic -o lorenz lorenz.c galaksija.c globals.c welcome_screen.c
 ```
-
-## TODO
-
-- Improve key press handling
-- Examine the effect on performance of using macros instead of functions

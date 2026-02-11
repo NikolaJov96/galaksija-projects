@@ -109,10 +109,8 @@ extern enum program_execution_state program_state;
 extern enum view_axis projection;
 /* Stats visiblity flag */
 extern enum stats_visibility print_stats;
-/* Cooldown required between registering button presses */
-extern unsigned char ignore_button_cooldown;
-/* Latest pressed button character */
-extern unsigned char char_input;
+/* Button that has been pressed in the previous frame */
+extern unsigned char previous_button;
 /* Simulation iteration counter */
 extern int iteration;
 

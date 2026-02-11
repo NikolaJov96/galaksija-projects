@@ -71,16 +71,16 @@ void update_screen_char()
     const unsigned char x = screen_x * 2;
     const unsigned char y = screen_y * 3;
 
-    char_input = 128;
-    char_input += (visit_count[y][x] > 0) * 1;
-    char_input += (visit_count[y][x + 1] > 0) * 2;
-    char_input += (visit_count[y + 1][x] > 0) * 4;
-    char_input += (visit_count[y + 1][x + 1] > 0) * 8;
-    char_input += (visit_count[y + 2][x] > 0) * 16;
-    char_input += (visit_count[y + 2][x + 1] > 0) * 32;
+    char block_char = 128;
+    block_char += (visit_count[y][x] > 0) * 1;
+    block_char += (visit_count[y][x + 1] > 0) * 2;
+    block_char += (visit_count[y + 1][x] > 0) * 4;
+    block_char += (visit_count[y + 1][x + 1] > 0) * 8;
+    block_char += (visit_count[y + 2][x] > 0) * 16;
+    block_char += (visit_count[y + 2][x + 1] > 0) * 32;
 
     gal_gotoxy(screen_x, screen_y);
-    gal_putc(char_input);
+    gal_putc(block_char);
 }
 
 /* Resets the path history arrays to -1. Optionally, erases the currently drawn points.
@@ -159,72 +159,68 @@ void reinitialize_path_history(enum call_mode call_mode)
 /* Handles user input actions */
 void handle_user_input()
 {
-    if (ignore_button_cooldown == 0)
+    char pressed_button = getk();
+
+    // The user is still holding the same button, ignore it
+    if (pressed_button == previous_button)
     {
-        char_input = getk();
-        switch (char_input)
+        return;
+    }
+
+    switch (pressed_button)
+    {
+    case KEY_LEFT:
+        dt = dt > 1 ? dt - 1 : dt;
+        if (print_stats == STATS_ON)
         {
-        case KEY_LEFT:
-            dt = dt > 1 ? dt - 1 : dt;
-            if (print_stats == STATS_ON)
-            {
-                gal_gotoxy(4, SCREEN_HEIGHT - 3);
-                print_int((int)dt);
-            }
-            ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
-            break;
-        case KEY_RIGHT:
-            dt++;
-            if (print_stats == STATS_ON)
-            {
-                gal_gotoxy(4, SCREEN_HEIGHT - 3);
-                print_int((int)dt);
-            }
-            ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
-            break;
-        case '1':
-            if (projection != ASIS_XY)
-            {
-                projection = ASIS_XY;
-                reinitialize_path_history(CALL_RUN);
-            }
-            ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
-            break;
-        case '2':
-            if (projection != ASIS_XZ)
-            {
-                projection = ASIS_XZ;
-                reinitialize_path_history(CALL_RUN);
-            }
-            ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
-            break;
-        case '3':
-            if (projection != ASIS_YZ)
-            {
-                projection = ASIS_YZ;
-                reinitialize_path_history(CALL_RUN);
-            }
-            ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
-            break;
-        case 'R':
-            program_state = RESTART;
-            break;
-        case 'S':
-            toggle_stats();
-            ignore_button_cooldown = IGNORE_BUTTON_COOLDOWN;
-            break;
-        case KEY_DEL:
-            gal_cls();
-            program_state = EXIT_PROGRAM;
-            break;
-        default:
-            break;
+            gal_gotoxy(4, SCREEN_HEIGHT - 3);
+            print_int((int)dt);
         }
+        break;
+    case KEY_RIGHT:
+        dt++;
+        if (print_stats == STATS_ON)
+        {
+            gal_gotoxy(4, SCREEN_HEIGHT - 3);
+            print_int((int)dt);
+        }
+        break;
+    case '1':
+        if (projection != ASIS_XY)
+        {
+            projection = ASIS_XY;
+            reinitialize_path_history(CALL_RUN);
+        }
+        break;
+    case '2':
+        if (projection != ASIS_XZ)
+        {
+            projection = ASIS_XZ;
+            reinitialize_path_history(CALL_RUN);
+        }
+        break;
+    case '3':
+        if (projection != ASIS_YZ)
+        {
+            projection = ASIS_YZ;
+            reinitialize_path_history(CALL_RUN);
+        }
+        break;
+    case 'R':
+        program_state = RESTART;
+        break;
+    case 'S':
+        toggle_stats();
+        break;
+    case KEY_DEL:
+        gal_cls();
+        program_state = EXIT_PROGRAM;
+        break;
+    default:
+        break;
     }
-    else
-    {
-        ignore_button_cooldown--;
-    }
+
+    previous_button = pressed_button;
 }
 
 int main()
