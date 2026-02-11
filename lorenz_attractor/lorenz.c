@@ -353,7 +353,11 @@ SIM_ITER:
         gal_gotoxy(6, SCREEN_HEIGHT - 2);
         print_int(iteration);
     }
-    iteration++;
+
+    if (iteration < INT16_MAX)
+    {
+        iteration++;
+    }
 
     handle_user_input();
 
