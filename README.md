@@ -1,3 +1,5 @@
+![galaksija](https://github.com/user-attachments/assets/70c6325e-af96-4981-b123-3ce4ea6c6796)
+
 # Projects for the Galaksija computer
 
 This repo contains projects for the Galaksija computer.
