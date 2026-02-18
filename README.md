@@ -44,7 +44,7 @@ The following online emulators are completely compatible with the original hardw
 - All arrays are defined globally because stack memory is too limited.
 - For consistency, all other variables are defined globally, too, except loop iterators.
 - Defines and code duplication are not sins, because every cycle counts, and function calls are not free.
-- Int 32 and int 64 arithmetic works, but assigning an expression of one type to a variable of another type may cause inconsistent crashes.
+- Int 32 and int 64 arithmetic works, but assigning an expression of one type to a variable of another type may cause inconsistent crashes. Interestingly, those crashes are reproducible in the emulators.
   ``` C
   int32_t x, y;
 
@@ -55,3 +55,4 @@ The following online emulators are completely compatible with the original hardw
   int32_t temp = x + y;
   char r = (char)temp;
   ```
+- If the program runs for a while and crashes suddenly, don't exclude the overheating of the CPU.
