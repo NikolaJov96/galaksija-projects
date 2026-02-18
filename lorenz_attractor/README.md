@@ -1,6 +1,6 @@
 # Lorenz System
 
-Simulation and visualization of a Lorenz system using fixed-point arithmetic.
+Simulation and visualization of the Lorenz attractor system using fixed-point arithmetic.
 
 Learn about chaotic systems and Lorenz attractors on this [wiki](https://en.wikipedia.org/wiki/Lorenz_system).
 
