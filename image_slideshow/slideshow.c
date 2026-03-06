@@ -30,6 +30,7 @@
 #define PAN_STEPS    8
 #define PAN_DELAY    15
 #define STATIC_DELAY ((PAN_STEPS + 1) * PAN_DELAY)
+#define HOLD_DELAY   30   /* extra outer iterations to hold the last frame before advancing */
 
 #define KEY_LEFT 45
 #define KEY_RIGHT 46
@@ -150,6 +151,10 @@ int main()
             if (current_image >= NUM_IMAGES)
                 current_image = 0;
         }
+
+        /* Hold the last frame a bit longer before advancing */
+        for (delay_i = 0; delay_i < HOLD_DELAY; delay_i++)
+            for (delay_j = 0; delay_j < 1000; delay_j++);
     }
 
     return 0;
