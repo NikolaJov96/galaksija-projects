@@ -218,7 +218,8 @@ def write_header(output_dir: str | Path, num_images: int, multiplier: float = 1.
         f.write(f"#define MAX_PAN_Y      {img_rows - SCREEN_HEIGHT}   /* IMAGE_ROWS - SCREEN_HEIGHT */\n")
         f.write(f"#define NUM_IMAGES     {num_images}\n\n")
         f.write("extern const unsigned char images[NUM_IMAGES][IMAGE_SIZE];\n")
-        f.write("extern const char *image_names[NUM_IMAGES];\n\n")
+        f.write("extern const char *image_names[NUM_IMAGES];\n")
+        f.write("extern const unsigned char image_name_lengths[NUM_IMAGES];\n\n")
         f.write("#endif /* IMAGES_H */\n")
 
 
@@ -242,14 +243,20 @@ def write_source(output_dir: str | Path, image_paths: list[Path], all_images: li
 
         f.write("};\n\n")
 
+        names = [to_galaksija_name(path.stem) for path in image_paths]
+
         f.write("const char *image_names[NUM_IMAGES] =\n{\n")
-        for i, path in enumerate(image_paths):
-            name = to_galaksija_name(path.stem)
+        for i, name in enumerate(names):
             # Escape backslash and double-quote for C string literals.
             # chr(92)=\ maps to Galaksija's Ć glyph; it must be written as \\ in C.
             c_name = name.replace("\\", "\\\\").replace('"', '\\"')
-            separator = "," if i < len(image_paths) - 1 else ""
+            separator = "," if i < len(names) - 1 else ""
             f.write(f'    "{c_name}"{separator}\n')
+        f.write("};\n\n")
+
+        f.write("const unsigned char image_name_lengths[NUM_IMAGES] =\n{\n")
+        lengths = ", ".join(str(len(name)) for name in names)
+        f.write(f"    {lengths}\n")
         f.write("};\n")
 
 

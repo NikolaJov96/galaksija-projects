@@ -43,15 +43,27 @@ int pan_x, pan_y;
 
 int current_image;
 
+/* Write the current image name on the left of the last row.
+   The right portion of that row is filled by display_window().
+   Called once per image, not on every pan step. */
+void display_name()
+{
+    gal_gotoxy(0, 15);
+    gal_puts(image_names[current_image]);
+}
+
 /* Copy a SCREEN_WIDTH x SCREEN_HEIGHT window from the current image,
-   offset by (pan_x, pan_y) chars, directly to video memory. */
+   offset by (pan_x, pan_y) chars, directly to video memory.
+   On the last row the name occupies the left columns, so image content
+   is written only from column image_name_lengths[current_image] onward. */
 void display_window()
 {
-    int cy, cx;
+    int cy, cx, cx_start;
     const unsigned char *img = images[current_image];
     for (cy = 0; cy < SCREEN_HEIGHT; cy++)
     {
-        for (cx = 0; cx < SCREEN_WIDTH; cx++)
+        cx_start = (cy == SCREEN_HEIGHT - 1) ? image_name_lengths[current_image] : 0;
+        for (cx = cx_start; cx < SCREEN_WIDTH; cx++)
         {
             z80_bpoke(SCREEN_ADDR + cy * SCREEN_WIDTH + cx,
                       img[(cy + pan_y) * IMAGE_COLS + (cx + pan_x)]);
@@ -75,12 +87,11 @@ int main()
 
         if (MAX_PAN_X == 0)
         {
-            /* No pan: display once and hold for the full TOTAL_DELAY */
+            /* No pan: display once and hold for the full STATIC_DELAY */
             pan_x = 0;
             pan_y = 0;
             display_window();
-            gal_gotoxy(0, 15);
-            gal_puts(image_names[current_image]);
+            display_name();
 
             for (delay_i = 0; delay_i < STATIC_DELAY && key == 0; delay_i++)
             {
@@ -90,21 +101,30 @@ int main()
         }
         else
         {
-            /* Pan from top-left to bottom-right over the same TOTAL_DELAY */
-            for (pan_step = 0; pan_step <= PAN_STEPS && key == 0; pan_step++)
+            /* Pan from top-left to bottom-right; name is written once before panning */
+            pan_x = 0;
+            pan_y = 0;
+            display_window();
+            display_name();
+
+            for (pan_step = 1; pan_step <= PAN_STEPS && key == 0; pan_step++)
             {
-                pan_x = pan_step * MAX_PAN_X / PAN_STEPS;
-                pan_y = pan_step * MAX_PAN_Y / PAN_STEPS;
-
-                display_window();
-                gal_gotoxy(0, 15);
-                gal_puts(image_names[current_image]);
-
                 for (delay_i = 0; delay_i < PAN_DELAY && key == 0; delay_i++)
                 {
                     for (delay_j = 0; delay_j < 1000; delay_j++);
                     key = getk();
                 }
+
+                pan_x = pan_step * MAX_PAN_X / PAN_STEPS;
+                pan_y = pan_step * MAX_PAN_Y / PAN_STEPS;
+                display_window();
+            }
+
+            /* Hold on the final frame */
+            for (delay_i = 0; delay_i < PAN_DELAY && key == 0; delay_i++)
+            {
+                for (delay_j = 0; delay_j < 1000; delay_j++);
+                key = getk();
             }
         }
 
