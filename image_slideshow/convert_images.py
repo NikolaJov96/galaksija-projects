@@ -278,7 +278,7 @@ def main() -> None:
         type=int,
         default=2,
         metavar="N",
-        help="image size multiplier for pan effect; images are stored at N× the screen "
+        help="image size multiplier for pan effect; images are stored at N x the screen "
              "resolution and the viewport pans from top-left to bottom-right (default: 2)",
     )
     args = parser.parse_args()
