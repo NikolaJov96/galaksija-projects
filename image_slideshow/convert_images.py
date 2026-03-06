@@ -32,13 +32,13 @@ IMAGE_SIZE    = SCREEN_WIDTH * SCREEN_HEIGHT  # 512
 SUPPORTED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".gif", ".tiff", ".webp"}
 
 # Galaksija character set mappings for Serbian Latin characters.
-# Char 92 (backslash in ASCII) renders as Ć on Galaksija; others fall back to ASCII.
+# Chars 91-94 in Galaksija's ROM render as Č, Ć, Ž, Š respectively.
 _GALAKSIJA_CHARS: dict[str, str] = {
-    "Ć": "\\\\",  # Galaksija char 92
-    "Č": "C",
-    "Š": "S",
-    "Ž": "Z",
-    "Đ": "D",
+    "Č": chr(91),
+    "Ć": chr(92),
+    "Ž": chr(93),
+    "Š": chr(94),
+    "Đ": "DJ",
 }
 
 
