@@ -19,15 +19,17 @@
 #include "welcome_screen.h"
 
 /* Pan effect constants.
-   MAX_PAN_X/Y     : from images.h — pan travel in chars (IMAGE_COLS/ROWS - SCREEN_WIDTH/HEIGHT).
-   PAN_STEPS       : number of viewport positions shown per image (pan resolution).
-   PAN_DELAY       : outer delay loop iterations between each pan step.
-                     Each outer iteration runs 1000 inner iterations plus a getk() call.
-   TOTAL_DELAY     : total outer delay iterations per image, same regardless of multiplier.
-                     Increase PAN_STEPS or PAN_DELAY to lengthen display time. */
-#define PAN_STEPS    64
+   MAX_PAN_X/Y  : from images.h — pan travel in chars (IMAGE_COLS/ROWS - SCREEN_WIDTH/HEIGHT).
+   PAN_STEPS    : number of pan positions per image. Both axes advance proportionally each
+                  step so the viewport always moves along the same angle towards the
+                  bottom-right corner: pan_x/pan_y == MAX_PAN_X/MAX_PAN_Y at every step.
+   PAN_DELAY    : outer delay loop iterations between each pan step.
+                  Each outer iteration runs 1000 inner iterations plus a getk() call.
+                  Increase for a slower pan.
+   STATIC_DELAY : outer delay iterations when there is no pan (multiplier = 1.0). */
+#define PAN_STEPS    8
 #define PAN_DELAY    15
-#define TOTAL_DELAY  ((PAN_STEPS + 1) * PAN_DELAY)
+#define STATIC_DELAY ((PAN_STEPS + 1) * PAN_DELAY)
 
 #define KEY_LEFT 45
 #define KEY_RIGHT 46
@@ -77,10 +79,10 @@ int main()
             pan_x = 0;
             pan_y = 0;
             display_window();
-            gal_gotoxy(1, 15);
+            gal_gotoxy(0, 15);
             gal_puts(image_names[current_image]);
 
-            for (delay_i = 0; delay_i < TOTAL_DELAY && key == 0; delay_i++)
+            for (delay_i = 0; delay_i < STATIC_DELAY && key == 0; delay_i++)
             {
                 for (delay_j = 0; delay_j < 1000; delay_j++);
                 key = getk();
@@ -95,7 +97,7 @@ int main()
                 pan_y = pan_step * MAX_PAN_Y / PAN_STEPS;
 
                 display_window();
-                gal_gotoxy(1, 15);
+                gal_gotoxy(0, 15);
                 gal_puts(image_names[current_image]);
 
                 for (delay_i = 0; delay_i < PAN_DELAY && key == 0; delay_i++)
