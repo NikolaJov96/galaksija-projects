@@ -30,7 +30,7 @@
 #define PAN_STEPS    8
 #define PAN_DELAY    15
 #define STATIC_DELAY ((PAN_STEPS + 1) * PAN_DELAY)
-#define HOLD_DELAY   30   /* extra outer iterations to hold the last frame before advancing */
+#define HOLD_DELAY   40   /* extra outer iterations to hold the last frame before advancing */
 
 #define KEY_LEFT 45
 #define KEY_RIGHT 46
@@ -125,11 +125,15 @@ int main()
 
                 pan_x = pan_step * image_pan_max_x[current_image] / PAN_STEPS;
                 pan_y = pan_step * image_pan_max_y[current_image] / PAN_STEPS;
-                display_window();
+
+                if (key == 0)
+                {
+                    display_window();
+                }
             }
 
             /* Hold on the final frame */
-            for (delay_i = 0; delay_i < PAN_DELAY && key == 0; delay_i++)
+            for (delay_i = 0; delay_i < HOLD_DELAY && key == 0; delay_i++)
             {
                 for (delay_j = 0; delay_j < 1000; delay_j++);
                 key = getk();
@@ -151,10 +155,6 @@ int main()
             if (current_image >= NUM_IMAGES)
                 current_image = 0;
         }
-
-        /* Hold the last frame a bit longer before advancing */
-        for (delay_i = 0; delay_i < HOLD_DELAY; delay_i++)
-            for (delay_j = 0; delay_j < 1000; delay_j++);
     }
 
     return 0;
