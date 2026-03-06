@@ -93,7 +93,7 @@ int main()
     {
         key = 0;
 
-        if (MAX_PAN_X == 0)
+        if (image_pan_max_x[current_image] == 0 && image_pan_max_y[current_image] == 0)
         {
             /* No pan: display once and hold for the full STATIC_DELAY */
             pan_x = 0;
@@ -123,8 +123,8 @@ int main()
                     key = getk();
                 }
 
-                pan_x = pan_step * MAX_PAN_X / PAN_STEPS;
-                pan_y = pan_step * MAX_PAN_Y / PAN_STEPS;
+                pan_x = pan_step * image_pan_max_x[current_image] / PAN_STEPS;
+                pan_y = pan_step * image_pan_max_y[current_image] / PAN_STEPS;
                 display_window();
             }
 

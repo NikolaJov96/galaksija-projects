@@ -142,15 +142,17 @@ def collect_images(input_dir: str | Path) -> list[Path]:
     return sorted(f for f in p.iterdir() if f.suffix.lower() in SUPPORTED_EXTENSIONS)
 
 
-def image_to_galaksija(img_path: str | Path, dither: DitherMethod, multiplier: float = 1.0) -> tuple[list[int], PILImage]:
+def image_to_galaksija(img_path: str | Path, dither: DitherMethod, multiplier: float = 1.0) -> tuple[list[int], PILImage, int, int]:
     """Convert an image file to Galaksija character values and a B&W preview image.
 
     With multiplier > 1, the image is stored at multiplier × the screen resolution,
     producing a (SCREEN_WIDTH*m) × (SCREEN_HEIGHT*m) character grid for pan effects.
 
     Returns:
-        chars   -- list of (SCREEN_WIDTH*m)*(SCREEN_HEIGHT*m) character values
-        bw_img  -- the (PIXEL_WIDTH*m)×(PIXEL_HEIGHT*m) B&W PIL Image used to produce chars
+        chars     -- list of (SCREEN_WIDTH*m)*(SCREEN_HEIGHT*m) character values
+        bw_img    -- the (PIXEL_WIDTH*m)×(PIXEL_HEIGHT*m) B&W PIL Image used to produce chars
+        pan_max_x -- max pan offset in X (chars); limited to actual image content
+        pan_max_y -- max pan offset in Y (chars); limited to actual image content
     """
     img_cols = round(SCREEN_WIDTH  * multiplier)
     img_rows = round(SCREEN_HEIGHT * multiplier)
@@ -158,8 +160,29 @@ def image_to_galaksija(img_path: str | Path, dither: DitherMethod, multiplier: f
     px_h     = img_rows * 3
 
     img = Image.open(img_path).convert("RGB")
-    img = center_crop(img, PIXEL_WIDTH / PIXEL_HEIGHT)
-    img = img.resize((px_w, px_h), Image.LANCZOS)
+    if multiplier <= 1.0:
+        # At 1:1 scale, crop to Galaksija's 4:3 ratio then resize to exact screen size.
+        img = center_crop(img, PIXEL_WIDTH / PIXEL_HEIGHT)
+        img = img.resize((px_w, px_h), Image.LANCZOS)
+        pan_max_x = 0
+        pan_max_y = 0
+    else:
+        # At larger scales, preserve the source image's natural aspect ratio.
+        # Scale to fit entirely within the oversized grid and place at (0, 0);
+        # the remaining area stays black so the pan covers the actual image content.
+        src_w, src_h = img.size
+        scale = min(px_w / src_w, px_h / src_h)
+        content_px_w = round(src_w * scale)
+        content_px_h = round(src_h * scale)
+        img = img.resize((content_px_w, content_px_h), Image.LANCZOS)
+        canvas = Image.new("RGB", (px_w, px_h), (0, 0, 0))
+        canvas.paste(img, (0, 0))
+        img = canvas
+        # Pan limit: how far the viewport can travel before hitting black padding.
+        content_cols = content_px_w // 2
+        content_rows = content_px_h // 3
+        pan_max_x = max(0, content_cols - SCREEN_WIDTH)
+        pan_max_y = max(0, content_rows - SCREEN_HEIGHT)
     bw_img = apply_dither(img, dither)
 
     pixels = bw_img.load()
@@ -184,19 +207,22 @@ def image_to_galaksija(img_path: str | Path, dither: DitherMethod, multiplier: f
 
             chars.append(char_val)
 
-    return chars, bw_img
+    return chars, bw_img, pan_max_x, pan_max_y
 
 
-def save_preview(bw_img: PILImage, output_dir: str | Path, stem: str) -> None:
-    """Save B&W previews to <output_dir>/galaksija_images/:
-    - <stem>.png         -- exact 64x48 pixels
-    - <stem>_8x.png      -- 8x upscaled (512x384) for easy viewing
+def save_preview(bw_img: PILImage, output_dir: str | Path, stem: str, pan_max_x: int = 0, pan_max_y: int = 0) -> None:
+    """Save B&W previews to <output_dir>/galaksija_images/.
+    If pan_max_x/y > 0, crops the image to the actual content area (no black padding).
     """
     preview_dir = Path(output_dir) / "galaksija_images"
     preview_dir.mkdir(parents=True, exist_ok=True)
+    if pan_max_x > 0 or pan_max_y > 0:
+        content_px_w = (pan_max_x + SCREEN_WIDTH) * 2
+        content_px_h = (pan_max_y + SCREEN_HEIGHT) * 3
+        bw_img = bw_img.crop((0, 0, content_px_w, content_px_h))
     bw_img.save(preview_dir / f"{stem}.png")
     upscaled = bw_img.resize(
-        (PIXEL_WIDTH * PREVIEW_SCALE, PIXEL_HEIGHT * PREVIEW_SCALE),
+        (bw_img.width * PREVIEW_SCALE, bw_img.height * PREVIEW_SCALE),
         Image.NEAREST,
     )
     upscaled.save(preview_dir / f"{stem}_8x.png")
@@ -219,11 +245,13 @@ def write_header(output_dir: str | Path, num_images: int, multiplier: float = 1.
         f.write(f"#define NUM_IMAGES     {num_images}\n\n")
         f.write("extern const unsigned char images[NUM_IMAGES][IMAGE_SIZE];\n")
         f.write("extern const char *image_names[NUM_IMAGES];\n")
-        f.write("extern const unsigned char image_name_lengths[NUM_IMAGES];\n\n")
+        f.write("extern const unsigned char image_name_lengths[NUM_IMAGES];\n")
+        f.write("extern const unsigned char image_pan_max_x[NUM_IMAGES];\n")
+        f.write("extern const unsigned char image_pan_max_y[NUM_IMAGES];\n\n")
         f.write("#endif /* IMAGES_H */\n")
 
 
-def write_source(output_dir: str | Path, image_paths: list[Path], all_images: list[list[int]], multiplier: float = 1.0) -> None:
+def write_source(output_dir: str | Path, image_paths: list[Path], all_images: list[list[int]], pan_limits: list[tuple[int, int]], multiplier: float = 1.0) -> None:
     img_cols = round(SCREEN_WIDTH  * multiplier)
     img_rows = round(SCREEN_HEIGHT * multiplier)
     with open(Path(output_dir) / "images.c", "w", encoding="utf-8") as f:
@@ -257,6 +285,14 @@ def write_source(output_dir: str | Path, image_paths: list[Path], all_images: li
         f.write("const unsigned char image_name_lengths[NUM_IMAGES] =\n{\n")
         lengths = ", ".join(str(len(name)) for name in names)
         f.write(f"    {lengths}\n")
+        f.write("};\n\n")
+
+        f.write("const unsigned char image_pan_max_x[NUM_IMAGES] =\n{\n")
+        f.write("    " + ", ".join(str(pmx) for pmx, _ in pan_limits) + "\n")
+        f.write("};\n\n")
+
+        f.write("const unsigned char image_pan_max_y[NUM_IMAGES] =\n{\n")
+        f.write("    " + ", ".join(str(pmy) for _, pmy in pan_limits) + "\n")
         f.write("};\n")
 
 
@@ -301,15 +337,17 @@ def main() -> None:
         parser.error(f"No supported image files found in '{args.input_dir}'")
 
     all_images = []
+    pan_limits = []
     for path in image_paths:
         print(f"Converting {path.name}...")
-        chars, bw_img = image_to_galaksija(path, args.dither, args.multiplier)
+        chars, bw_img, pan_max_x, pan_max_y = image_to_galaksija(path, args.dither, args.multiplier)
         all_images.append(chars)
-        save_preview(bw_img, args.output_dir, path.stem)
+        pan_limits.append((pan_max_x, pan_max_y))
+        save_preview(bw_img, args.output_dir, path.stem, pan_max_x, pan_max_y)
 
     Path(args.output_dir).mkdir(parents=True, exist_ok=True)
     write_header(args.output_dir, len(all_images), args.multiplier)
-    write_source(args.output_dir, image_paths, all_images, args.multiplier)
+    write_source(args.output_dir, image_paths, all_images, pan_limits, args.multiplier)
 
     print(f"Done. Generated images.h, images.c, and galaksija_images/ with {len(all_images)} image(s).")
 
