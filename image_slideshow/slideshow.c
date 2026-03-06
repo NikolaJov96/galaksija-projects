@@ -59,14 +59,21 @@ void display_name()
 void display_window()
 {
     int cy, cx, cx_start;
+    unsigned char ch;
     const unsigned char *img = images[current_image];
     for (cy = 0; cy < SCREEN_HEIGHT; cy++)
     {
         cx_start = (cy == SCREEN_HEIGHT - 1) ? image_name_lengths[current_image] : 0;
         for (cx = cx_start; cx < SCREEN_WIDTH; cx++)
         {
-            z80_bpoke(SCREEN_ADDR + cy * SCREEN_WIDTH + cx,
-                      img[(cy + pan_y) * IMAGE_COLS + (cx + pan_x)]);
+            ch = img[(cy + pan_y) * IMAGE_COLS + (cx + pan_x)];
+            if (cy == SCREEN_HEIGHT - 2 && cx < image_name_lengths[current_image])
+                ch &= ~(16 | 32);  /* clear bottom two pixels in chars above the name */
+            if (cy == SCREEN_HEIGHT - 1 && cx == image_name_lengths[current_image])
+                ch &= ~(1 | 4 | 16);  /* clear left three pixels of char right of name */
+            if (cy == SCREEN_HEIGHT - 2 && cx == image_name_lengths[current_image])
+                ch &= ~16;  /* clear bottom-left pixel of char above-right of name */
+            z80_bpoke(SCREEN_ADDR + cy * SCREEN_WIDTH + cx, ch);
         }
     }
 }

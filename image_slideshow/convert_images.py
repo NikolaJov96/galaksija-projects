@@ -142,7 +142,7 @@ def collect_images(input_dir: str | Path) -> list[Path]:
     return sorted(f for f in p.iterdir() if f.suffix.lower() in SUPPORTED_EXTENSIONS)
 
 
-def image_to_galaksija(img_path: str | Path, dither: DitherMethod, multiplier: int = 1) -> tuple[list[int], PILImage]:
+def image_to_galaksija(img_path: str | Path, dither: DitherMethod, multiplier: float = 1.0) -> tuple[list[int], PILImage]:
     """Convert an image file to Galaksija character values and a B&W preview image.
 
     With multiplier > 1, the image is stored at multiplier × the screen resolution,
