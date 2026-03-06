@@ -19,14 +19,15 @@
 #include "welcome_screen.h"
 
 /* Pan effect constants.
-   PAN_STEPS : number of viewport positions shown per image (pan resolution).
-   PAN_DELAY : outer delay loop iterations between each pan step.
-               Each outer iteration runs 1000 inner iterations plus a getk() call.
-               Increase for a slower pan. */
-#define MAX_PAN_X  ((MULTIPLIER - 1) * SCREEN_WIDTH)
-#define MAX_PAN_Y  ((MULTIPLIER - 1) * SCREEN_HEIGHT)
-#define PAN_STEPS  64
-#define PAN_DELAY  15
+   MAX_PAN_X/Y     : from images.h — pan travel in chars (IMAGE_COLS/ROWS - SCREEN_WIDTH/HEIGHT).
+   PAN_STEPS       : number of viewport positions shown per image (pan resolution).
+   PAN_DELAY       : outer delay loop iterations between each pan step.
+                     Each outer iteration runs 1000 inner iterations plus a getk() call.
+   TOTAL_DELAY     : total outer delay iterations per image, same regardless of multiplier.
+                     Increase PAN_STEPS or PAN_DELAY to lengthen display time. */
+#define PAN_STEPS    64
+#define PAN_DELAY    15
+#define TOTAL_DELAY  ((PAN_STEPS + 1) * PAN_DELAY)
 
 #define KEY_LEFT 45
 #define KEY_RIGHT 46
@@ -70,19 +71,38 @@ int main()
     {
         key = 0;
 
-        for (pan_step = 0; pan_step <= PAN_STEPS && key == 0; pan_step++)
+        if (MAX_PAN_X == 0)
         {
-            pan_x = pan_step * MAX_PAN_X / PAN_STEPS;
-            pan_y = pan_step * MAX_PAN_Y / PAN_STEPS;
-
+            /* No pan: display once and hold for the full TOTAL_DELAY */
+            pan_x = 0;
+            pan_y = 0;
             display_window();
             gal_gotoxy(1, 15);
             gal_puts(image_names[current_image]);
 
-            for (delay_i = 0; delay_i < PAN_DELAY && key == 0; delay_i++)
+            for (delay_i = 0; delay_i < TOTAL_DELAY && key == 0; delay_i++)
             {
                 for (delay_j = 0; delay_j < 1000; delay_j++);
                 key = getk();
+            }
+        }
+        else
+        {
+            /* Pan from top-left to bottom-right over the same TOTAL_DELAY */
+            for (pan_step = 0; pan_step <= PAN_STEPS && key == 0; pan_step++)
+            {
+                pan_x = pan_step * MAX_PAN_X / PAN_STEPS;
+                pan_y = pan_step * MAX_PAN_Y / PAN_STEPS;
+
+                display_window();
+                gal_gotoxy(1, 15);
+                gal_puts(image_names[current_image]);
+
+                for (delay_i = 0; delay_i < PAN_DELAY && key == 0; delay_i++)
+                {
+                    for (delay_j = 0; delay_j < 1000; delay_j++);
+                    key = getk();
+                }
             }
         }
 
