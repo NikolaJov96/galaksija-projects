@@ -38,9 +38,10 @@ make
 
 The build system:
 1. Converts images to Galaksija format and compiles the program.
-2. Generates `build/slideshow_preview.gif` -- an animated GIF showing the same
+2. Writes B&W dithered previews to `build/galaksija_images/`.
+3. Generates `build/slideshow_preview.gif` -- an animated GIF showing the same
    viewport pan sequence as the hardware, using color images.
-3. Generates `build/slideshow_preview.mp4` -- a 30 fps video simulating the gradual
+4. Generates `build/slideshow_preview.mp4` -- a 30 fps video simulating the gradual
    character-by-character rendering as it appears on the Galaksija CRT.
 
 Generated `image.h` and `image.c` files are committed so they can be inspected by repo visitors. They will be updated when a new build is executed. Generated binary, tape, and audio files are also included inside the `build` folder.

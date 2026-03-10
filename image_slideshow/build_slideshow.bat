@@ -16,7 +16,7 @@ cd /d %~dp0
 
 if not exist build mkdir build
 
-python convert_images.py original_images .
+python convert_images.py original_images . --preview-dir build
 
 if %ERRORLEVEL% neq 0 (
     echo Image conversion failed.

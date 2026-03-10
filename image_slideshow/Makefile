@@ -20,8 +20,8 @@ all: builddir $(TARGET) build/slideshow_preview.gif build/slideshow_preview.mp4
 builddir:
 	@mkdir -p build
 
-images.c: $(ORIGINAL_IMAGES) convert_images.py
-	python3 convert_images.py original_images .
+images.c: $(ORIGINAL_IMAGES) convert_images.py | builddir
+	python3 convert_images.py original_images . --preview-dir build
 
 images.h: images.c
 

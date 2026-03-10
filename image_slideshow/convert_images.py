@@ -313,6 +313,12 @@ def main() -> None:
         help="directory where images.h and images.c are written (default: current directory)",
     )
     parser.add_argument(
+        "--preview-dir",
+        metavar="DIR",
+        default=None,
+        help="directory where galaksija_images/ is written (default: same as OUTPUT_DIR)",
+    )
+    parser.add_argument(
         "--dither",
         type=DitherMethod,
         choices=list(DitherMethod),
@@ -343,7 +349,8 @@ def main() -> None:
         chars, bw_img, pan_max_x, pan_max_y = image_to_galaksija(path, args.dither, args.multiplier)
         all_images.append(chars)
         pan_limits.append((pan_max_x, pan_max_y))
-        save_preview(bw_img, args.output_dir, path.stem, pan_max_x, pan_max_y)
+        if args.preview_dir is not None:
+            save_preview(bw_img, args.preview_dir, path.stem, pan_max_x, pan_max_y)
 
     Path(args.output_dir).mkdir(parents=True, exist_ok=True)
     write_header(args.output_dir, len(all_images), args.multiplier)
