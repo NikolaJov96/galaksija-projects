@@ -38,7 +38,8 @@ from constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT,
     PAN_STEPS, PAN_DELAY, HOLD_DELAY, STATIC_DELAY,
 )
-from preview_utils import collect_images, build_canvas, get_viewport
+from utils import collect_images
+from preview_utils import build_canvas, get_viewport
 
 FPS = 30
 
@@ -139,11 +140,13 @@ def main() -> None:
     parser.add_argument(
         "input_dir",
         metavar="INPUT_DIR",
+        type=Path,
         help="directory containing the color source images",
     )
     parser.add_argument(
         "output",
         metavar="OUTPUT.mp4",
+        type=Path,
         help="output video file (MP4 recommended; extension determines format)",
     )
     parser.add_argument(
@@ -183,10 +186,9 @@ def main() -> None:
     if args.scale < 1:
         parser.error("--scale must be at least 1")
 
-    input_dir = Path(args.input_dir)
-    image_paths = collect_images(input_dir)
+    image_paths = collect_images(args.input_dir)
     if not image_paths:
-        parser.error(f"No supported images found in '{input_dir}'")
+        parser.error(f"No supported images found in '{args.input_dir}'")
 
     render_frames = max(1, round(args.render_time * FPS))
     print(
@@ -204,9 +206,8 @@ def main() -> None:
         ms_per_delay=args.ms_per_delay,
     )
 
-    output_path = Path(args.output)
-    print(f"Writing {output_path} ({len(frames)} frames at {FPS} fps = {len(frames)/FPS:.1f} s)...")
-    with imageio.get_writer(str(output_path), fps=FPS, codec="libx264", quality=8) as writer:
+    print(f"Writing {args.output} ({len(frames)} frames at {FPS} fps = {len(frames)/FPS:.1f} s)...")
+    with imageio.get_writer(str(args.output), fps=FPS, codec="libx264", quality=8) as writer:
         for frame in frames:
             writer.append_data(frame)
 

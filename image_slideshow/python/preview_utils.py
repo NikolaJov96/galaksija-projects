@@ -12,16 +12,6 @@ from PIL.Image import Image as PILImage
 
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT, PIXEL_WIDTH, PIXEL_HEIGHT
 
-SUPPORTED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".gif", ".tiff", ".webp"}
-
-
-def collect_images(input_dir: Path) -> list[Path]:
-    """Return a sorted list of supported image paths in input_dir."""
-    return sorted(
-        f for f in input_dir.iterdir()
-        if f.suffix.lower() in SUPPORTED_EXTENSIONS
-    )
-
 
 def build_canvas(
     img_path: Path,

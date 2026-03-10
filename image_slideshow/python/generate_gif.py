@@ -14,7 +14,8 @@ from pathlib import Path
 from PIL import Image
 
 from constants import PAN_DELAY, PAN_STEPS, HOLD_DELAY, STATIC_DELAY
-from preview_utils import collect_images, build_canvas, get_viewport
+from utils import collect_images
+from preview_utils import build_canvas, get_viewport
 
 
 def make_frames(
@@ -60,11 +61,13 @@ def main() -> None:
     parser.add_argument(
         "input_dir",
         metavar="INPUT_DIR",
+        type=Path,
         help="directory containing the color source images",
     )
     parser.add_argument(
         "output",
         metavar="OUTPUT.gif",
+        type=Path,
         help="path for the output GIF file",
     )
     parser.add_argument(
@@ -102,10 +105,9 @@ def main() -> None:
     if args.scale < 1:
         parser.error("--scale must be at least 1")
 
-    input_dir = Path(args.input_dir)
-    image_paths = collect_images(input_dir)
+    image_paths = collect_images(args.input_dir)
     if not image_paths:
-        parser.error(f"No supported images found in '{input_dir}'")
+        parser.error(f"No supported images found in '{args.input_dir}'")
 
     all_frames: list[Image.Image] = []
     all_durations: list[int] = []
@@ -116,17 +118,16 @@ def main() -> None:
             all_frames.append(frame)
             all_durations.append(dur)
 
-    output_path = Path(args.output)
-    print(f"Saving {output_path} ({len(all_frames)} frames)...")
+    print(f"Saving {args.output} ({len(all_frames)} frames)...")
     all_frames[0].save(
-        output_path,
+        args.output,
         save_all=True,
         append_images=all_frames[1:],
         duration=all_durations,
         loop=0 if not args.no_loop else 1,
         optimize=False,
     )
-    print(f"Done. {output_path} - {len(image_paths)} image(s), {len(all_frames)} frames total.")
+    print(f"Done. {args.output} - {len(image_paths)} image(s), {len(all_frames)} frames total.")
 
 
 if __name__ == "__main__":
