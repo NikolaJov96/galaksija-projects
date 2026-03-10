@@ -3,7 +3,7 @@ REM Build script for Image Slideshow project (Windows)
 REM Requires Z88DK and Python in PATH
 REM
 REM Usage:
-REM   1. Place images in the original_images\ folder
+REM   1. Place images in original_images\
 REM   2. Run: build_slideshow.bat
 
 setlocal
@@ -28,8 +28,24 @@ zcc +gal -create-app -pragma-redirect:fputc_cons=fputc_cons_generic -o %OUTPUT% 
 if %ERRORLEVEL% neq 0 (
     echo Build failed.
     exit /b %ERRORLEVEL%
-) else (
-    echo Build succeeded.
 )
+
+echo Build succeeded.
+
+python generate_gif.py original_images build\slideshow_preview.gif
+
+if %ERRORLEVEL% neq 0 (
+    echo GIF preview generation failed.
+    exit /b %ERRORLEVEL%
+)
+
+python generate_video.py original_images build\slideshow_preview.mp4
+
+if %ERRORLEVEL% neq 0 (
+    echo Video preview generation failed.
+    exit /b %ERRORLEVEL%
+)
+
+echo Done.
 
 endlocal

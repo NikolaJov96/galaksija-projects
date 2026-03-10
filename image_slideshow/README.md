@@ -36,7 +36,37 @@ On Linux, run:
 make
 ```
 
-The build system automatically converts the images and compiles the program.
+The build system:
+1. Converts images to Galaksija format and compiles the program.
+2. Generates `build/slideshow_preview.gif` -- an animated GIF showing the same
+   viewport pan sequence as the hardware, using color images.
+3. Generates `build/slideshow_preview.mp4` -- a 30 fps video simulating the gradual
+   character-by-character rendering as it appears on the Galaksija CRT.
+
+Generated `image.h` and `image.c` files are committed so they can be inspected by repo visitors. They will be updated when a new build is executed. Generated binary, tape, and audio files are also included inside the `build` folder.
+
+## Preview scripts
+
+Both scripts can also be run standalone:
+
+```console
+python generate_gif.py original_images/ build/slideshow_preview.gif
+python generate_video.py original_images/ build/slideshow_preview.mp4
+```
+
+Key options (both scripts):
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--multiplier N` | 1.5 | Must match the value used when building the slideshow |
+| `--scale N` | 8 | Each Galaksija pixel becomes NxN display pixels (512x384 at 8x) |
+| `--ms-per-delay MS` | 50 | Milliseconds per delay unit; tune to sync with real hardware speed |
+
+Additional option for `generate_video.py`:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--render-time S` | 3.0 | Seconds for display_window() to write all 512 characters |
 
 ## Technical notes
 
