@@ -44,7 +44,7 @@ The build system:
 4. Generates `build/slideshow_preview.mp4` -- a 30 fps video simulating the gradual
    character-by-character rendering as it appears on the Galaksija CRT.
 
-Generated `image.h` and `image.c` files are committed so they can be inspected by repo visitors. They will be updated when a new build is executed. Generated binary, tape, and audio files are also included inside the `build` folder.
+The generated `c/images.h`, `c/images.c`, and `c/constants.h` files are committed so they can be inspected by repo visitors. They will be updated when a new build is executed. Generated binary, tape, and audio files are also included inside the `build/` folder.
 
 ## Preview scripts
 
@@ -76,8 +76,10 @@ the slideshow pans the viewport from the top-left to the bottom-right corner. Th
 The converter supports several dithering methods via `--dither`: `floyd-steinberg`
 (default), `bayer2`, `bayer4`, `random`, and `blue-noise`.
 
-Display timing is controlled by constants in `slideshow.c`:
+Display timing constants are defined once in `python/constants.py` (the single source of truth) and automatically exported to `c/constants.h` at build time:
 - `PAN_STEPS` (default: 8) - number of pan positions per image.
 - `PAN_DELAY` (default: 15) - delay loop iterations between pan steps.
 - `HOLD_DELAY` (default: 40) - extra iterations to hold the final frame.
 - `STATIC_DELAY` (derived: `(PAN_STEPS + 1) * PAN_DELAY`) - total delay for non-panning images.
+
+Both the C slideshow and the Python preview scripts read from the same source, so changing a value in `python/constants.py` automatically updates all outputs on the next build.
