@@ -4,6 +4,8 @@ Displays a sequence of images on the screen, cycling through them with a short d
 
 Images are converted to the Galaksija's native black-and-white block-graphics format and baked into the program binary at build time.
 
+Mostly written by Claude Code. Although it needed some help to produce the final build system and file organization, it's incredible that it wrote pretty much all image manipulation logic and Galaksija-specific C code that compiled and worked correctly on the first try.
+
 ## Controls
 
 | Key | Action |
