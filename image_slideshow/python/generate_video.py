@@ -33,12 +33,12 @@ from PIL import Image
 
 import imageio
 
-from preview_utils import (
+from constants import (
     PIXEL_WIDTH, PIXEL_HEIGHT, TOTAL_CHARS,
     SCREEN_WIDTH, SCREEN_HEIGHT,
     PAN_STEPS, PAN_DELAY, HOLD_DELAY, STATIC_DELAY,
-    collect_images, build_canvas, get_viewport,
 )
+from preview_utils import collect_images, build_canvas, get_viewport
 
 FPS = 30
 

@@ -10,10 +10,7 @@ from pathlib import Path
 from PIL import Image
 from PIL.Image import Image as PILImage
 
-from constants import (
-    SCREEN_WIDTH, SCREEN_HEIGHT, PIXEL_WIDTH, PIXEL_HEIGHT, TOTAL_CHARS,
-    PAN_STEPS, PAN_DELAY, HOLD_DELAY, STATIC_DELAY,
-)
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, PIXEL_WIDTH, PIXEL_HEIGHT
 
 SUPPORTED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".gif", ".tiff", ".webp"}
 

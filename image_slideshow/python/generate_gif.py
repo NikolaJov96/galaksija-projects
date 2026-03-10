@@ -13,10 +13,8 @@ from pathlib import Path
 
 from PIL import Image
 
-from preview_utils import (
-    PAN_DELAY, PAN_STEPS, HOLD_DELAY, STATIC_DELAY,
-    collect_images, build_canvas, get_viewport,
-)
+from constants import PAN_DELAY, PAN_STEPS, HOLD_DELAY, STATIC_DELAY
+from preview_utils import collect_images, build_canvas, get_viewport
 
 
 def make_frames(
