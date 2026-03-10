@@ -1,6 +1,6 @@
 # Projects for the Galaksija computer
 
-This repo contains projects for the Galaksija computer.
+This repo contains projects for the Galaksija computer. Check out each subfolder for details.
 
 Galaksija is an 8-bit DIY computer from the 1980s, based on the Z80 CPU.
 
