@@ -6,10 +6,6 @@ The GIF replicates the exact viewport positions and panning behaviour of the C p
   - Each image starts with the viewport at the top-left corner.
   - The viewport pans in PAN_STEPS steps toward the bottom-right corner.
   - Frame durations match the delay constants from slideshow.c.
-
-Usage:
-    python generate_gif.py original_images/ slideshow_preview.gif
-    python generate_gif.py original_images/ slideshow_preview.gif --scale 4 --ms-per-delay 40
 """
 
 import argparse

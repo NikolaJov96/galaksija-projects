@@ -7,11 +7,11 @@
 
 ZCC = zcc
 TARGET = build/slideshow
-SOURCES = slideshow.c galaksija.c welcome_screen.c images.c
-ZCCFLAGS = +gal -create-app -pragma-redirect:fputc_cons=fputc_cons_generic
+SOURCES = c/slideshow.c c/galaksija.c c/welcome_screen.c c/images.c
+ZCCFLAGS = +gal -create-app -pragma-redirect:fputc_cons=fputc_cons_generic -Ic
 
 ORIGINAL_IMAGES = $(wildcard original_images/*)
-PREVIEW_UTILS = preview_utils.py
+PREVIEW_UTILS = python/preview_utils.py
 
 .PHONY: all clean builddir
 
@@ -20,19 +20,19 @@ all: builddir $(TARGET) build/slideshow_preview.gif build/slideshow_preview.mp4
 builddir:
 	@mkdir -p build
 
-images.c: $(ORIGINAL_IMAGES) convert_images.py | builddir
-	python3 convert_images.py original_images . --preview-dir build
+c/images.c: $(ORIGINAL_IMAGES) python/convert_images.py | builddir
+	python3 python/convert_images.py original_images c --preview-dir build
 
-images.h: images.c
+c/images.h: c/images.c
 
 $(TARGET): $(SOURCES) | builddir
 	$(ZCC) $(ZCCFLAGS) -o $(TARGET) $(SOURCES)
 
-build/slideshow_preview.gif: $(ORIGINAL_IMAGES) generate_gif.py $(PREVIEW_UTILS) | builddir
-	python3 generate_gif.py original_images build/slideshow_preview.gif
+build/slideshow_preview.gif: $(ORIGINAL_IMAGES) python/generate_gif.py $(PREVIEW_UTILS) | builddir
+	python3 python/generate_gif.py original_images build/slideshow_preview.gif
 
-build/slideshow_preview.mp4: $(ORIGINAL_IMAGES) generate_video.py $(PREVIEW_UTILS) | builddir
-	python3 generate_video.py original_images build/slideshow_preview.mp4
+build/slideshow_preview.mp4: $(ORIGINAL_IMAGES) python/generate_video.py $(PREVIEW_UTILS) | builddir
+	python3 python/generate_video.py original_images build/slideshow_preview.mp4
 
 clean:
-	rm -rf build images.c images.h
+	rm -rf build c/images.c c/images.h

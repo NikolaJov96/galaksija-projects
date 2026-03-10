@@ -19,7 +19,7 @@ Place your images (PNG, JPG, BMP, ...) into the `original_images` folder.
 Install Python dependencies:
 
 ```console
-pip install -r requirements.txt
+pip install -r python/requirements.txt
 ```
 
 Ensure Z88DK is properly installed, then build.
@@ -48,12 +48,7 @@ Generated `image.h` and `image.c` files are committed so they can be inspected b
 
 ## Preview scripts
 
-Both scripts can also be run standalone:
-
-```console
-python generate_gif.py original_images/ build/slideshow_preview.gif
-python generate_video.py original_images/ build/slideshow_preview.mp4
-```
+Both scripts can also be run standalone.
 
 Key options (both scripts):
 
