@@ -38,8 +38,7 @@ from constants import (
     SCREEN_WIDTH, SCREEN_HEIGHT,
     PAN_STEPS, PAN_DELAY, HOLD_DELAY, STATIC_DELAY,
 )
-from utils import collect_images
-from preview_utils import build_canvas, get_viewport
+from utils import collect_images, load_scaled_image, get_viewport
 
 FPS = 30
 
@@ -111,7 +110,7 @@ def generate_frames(
 
     for img_path in image_paths:
         print(f"  {img_path.name}...")
-        canvas, pan_max_x, pan_max_y = build_canvas(img_path, multiplier, display_scale)
+        canvas, pan_max_x, pan_max_y = load_scaled_image(img_path, multiplier, scale=display_scale)
 
         if pan_max_x == 0 and pan_max_y == 0:
             prev = emit_render(all_frames, prev, get_viewport(canvas, 0, 0, display_scale))

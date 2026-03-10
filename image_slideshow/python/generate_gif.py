@@ -14,8 +14,7 @@ from pathlib import Path
 from PIL import Image
 
 from constants import PAN_DELAY, PAN_STEPS, HOLD_DELAY, STATIC_DELAY
-from utils import collect_images
-from preview_utils import build_canvas, get_viewport
+from utils import collect_images, load_scaled_image, get_viewport
 
 
 def make_frames(
@@ -31,7 +30,7 @@ def make_frames(
         PAN_DELAY delay units, step 8 held for HOLD_DELAY delay units.
       - multiplier == 1: 1 frame shown for STATIC_DELAY delay units.
     """
-    canvas, pan_max_x, pan_max_y = build_canvas(img_path, multiplier, display_scale)
+    canvas, pan_max_x, pan_max_y = load_scaled_image(img_path, multiplier, scale=display_scale)
 
     if pan_max_x == 0 and pan_max_y == 0:
         frame = get_viewport(canvas, 0, 0, display_scale)

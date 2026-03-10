@@ -23,8 +23,8 @@ import numpy as np
 from PIL import Image
 from PIL.Image import Image as PILImage
 
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT, PIXEL_WIDTH, PIXEL_HEIGHT, TOTAL_CHARS
-from utils import collect_images
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, TOTAL_CHARS
+from utils import collect_images, load_scaled_image
 
 IMAGE_SIZE = TOTAL_CHARS  # alias used in write_header / write_source
 
@@ -118,62 +118,22 @@ def apply_dither(img: PILImage, method: DitherMethod) -> PILImage:
     raise ValueError(f"Unknown dither method: {method!r}")
 
 
-def center_crop(img: PILImage, target_ratio: float) -> PILImage:
-    """Crop img symmetrically to target_ratio (width / height) without resizing."""
-    w, h = img.size
-    current_ratio = w / h
-    if current_ratio > target_ratio:
-        new_w = int(h * target_ratio)
-        left = (w - new_w) // 2
-        return img.crop((left, 0, left + new_w, h))
-    elif current_ratio < target_ratio:
-        new_h = int(w / target_ratio)
-        top = (h - new_h) // 2
-        return img.crop((0, top, w, top + new_h))
-    return img
-
-
 def image_to_galaksija(img_path: Path, dither: DitherMethod, multiplier: float = 1.0) -> tuple[list[int], PILImage, int, int]:
     """Convert an image file to Galaksija character values and a B&W preview image.
 
-    With multiplier > 1, the image is stored at multiplier × the screen resolution,
-    producing a (SCREEN_WIDTH*m) × (SCREEN_HEIGHT*m) character grid for pan effects.
+    With multiplier > 1, the image is stored at multiplier x the screen resolution,
+    producing a (SCREEN_WIDTH*m) x (SCREEN_HEIGHT*m) character grid for pan effects.
 
     Returns:
         chars     -- list of (SCREEN_WIDTH*m)*(SCREEN_HEIGHT*m) character values
-        bw_img    -- the (PIXEL_WIDTH*m)×(PIXEL_HEIGHT*m) B&W PIL Image used to produce chars
+        bw_img    -- the B&W PIL image used to produce chars
         pan_max_x -- max pan offset in X (chars); limited to actual image content
         pan_max_y -- max pan offset in Y (chars); limited to actual image content
     """
-    img_cols = round(SCREEN_WIDTH  * multiplier)
+    img_cols = round(SCREEN_WIDTH * multiplier)
     img_rows = round(SCREEN_HEIGHT * multiplier)
-    px_w     = img_cols * 2
-    px_h     = img_rows * 3
 
-    img = Image.open(img_path).convert("RGB")
-    if multiplier <= 1.0:
-        # At 1:1 scale, crop to Galaksija's 4:3 ratio then resize to exact screen size.
-        img = center_crop(img, PIXEL_WIDTH / PIXEL_HEIGHT)
-        img = img.resize((px_w, px_h), Image.LANCZOS)
-        pan_max_x = 0
-        pan_max_y = 0
-    else:
-        # At larger scales, preserve the source image's natural aspect ratio.
-        # Scale to fit entirely within the oversized grid and place at (0, 0);
-        # the remaining area stays black so the pan covers the actual image content.
-        src_w, src_h = img.size
-        scale = min(px_w / src_w, px_h / src_h)
-        content_px_w = round(src_w * scale)
-        content_px_h = round(src_h * scale)
-        img = img.resize((content_px_w, content_px_h), Image.LANCZOS)
-        canvas = Image.new("RGB", (px_w, px_h), (0, 0, 0))
-        canvas.paste(img, (0, 0))
-        img = canvas
-        # Pan limit: how far the viewport can travel before hitting black padding.
-        content_cols = content_px_w // 2
-        content_rows = content_px_h // 3
-        pan_max_x = max(0, content_cols - SCREEN_WIDTH)
-        pan_max_y = max(0, content_rows - SCREEN_HEIGHT)
+    img, pan_max_x, pan_max_y = load_scaled_image(img_path, multiplier)
     bw_img = apply_dither(img, dither)
 
     pixels = bw_img.load()
