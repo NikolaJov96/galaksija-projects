@@ -10,22 +10,10 @@ from pathlib import Path
 from PIL import Image
 from PIL.Image import Image as PILImage
 
-# ---------------------------------------------------------------------------
-# Screen layout (matches convert_images.py)
-# ---------------------------------------------------------------------------
-SCREEN_WIDTH = 32
-SCREEN_HEIGHT = 16
-PIXEL_WIDTH = SCREEN_WIDTH * 2   # 64 Galaksija pixels wide
-PIXEL_HEIGHT = SCREEN_HEIGHT * 3   # 48 Galaksija pixels tall
-TOTAL_CHARS = SCREEN_WIDTH * SCREEN_HEIGHT  # 512
-
-# ---------------------------------------------------------------------------
-# Slideshow timing constants (matches slideshow.c)
-# ---------------------------------------------------------------------------
-PAN_STEPS = 8
-PAN_DELAY = 15   # delay units between pan steps
-HOLD_DELAY = 40   # delay units to hold the final frame
-STATIC_DELAY = (PAN_STEPS + 1) * PAN_DELAY  # total delay for non-panning images
+from constants import (
+    SCREEN_WIDTH, SCREEN_HEIGHT, PIXEL_WIDTH, PIXEL_HEIGHT, TOTAL_CHARS,
+    PAN_STEPS, PAN_DELAY, HOLD_DELAY, STATIC_DELAY,
+)
 
 SUPPORTED_EXTENSIONS = {".png", ".jpg", ".jpeg", ".bmp", ".gif", ".tiff", ".webp"}
 

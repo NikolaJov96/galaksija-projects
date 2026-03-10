@@ -16,6 +16,13 @@ cd /d %~dp0
 
 if not exist build mkdir build
 
+python python\constants.py c\constants.h
+
+if %ERRORLEVEL% neq 0 (
+    echo Constants header generation failed.
+    exit /b %ERRORLEVEL%
+)
+
 python python\convert_images.py original_images c --preview-dir build
 
 if %ERRORLEVEL% neq 0 (

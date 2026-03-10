@@ -14,12 +14,13 @@
 
 #include <conio.h>
 
+#include "constants.h"
 #include "galaksija.h"
 #include "images.h"
 #include "welcome_screen.h"
 
-/* Pan effect constants.
-   MAX_PAN_X/Y  : from images.h — pan travel in chars (IMAGE_COLS/ROWS - SCREEN_WIDTH/HEIGHT).
+/* Pan effect constants are defined in constants.h (generated from python/constants.py).
+   MAX_PAN_X/Y  : from images.h - pan travel in chars (IMAGE_COLS/ROWS - SCREEN_WIDTH/HEIGHT).
    PAN_STEPS    : number of pan positions per image. Both axes advance proportionally each
                   step so the viewport always moves along the same angle towards the
                   bottom-right corner: pan_x/pan_y == MAX_PAN_X/MAX_PAN_Y at every step.
@@ -27,10 +28,6 @@
                   Each outer iteration runs 1000 inner iterations plus a getk() call.
                   Increase for a slower pan.
    STATIC_DELAY : outer delay iterations when there is no pan (multiplier = 1.0). */
-#define PAN_STEPS    8
-#define PAN_DELAY    15
-#define STATIC_DELAY ((PAN_STEPS + 1) * PAN_DELAY)
-#define HOLD_DELAY   40   /* extra outer iterations to hold the last frame before advancing */
 
 #define KEY_LEFT 45
 #define KEY_RIGHT 46
